@@ -113,24 +113,6 @@
                 </execution>
             </executions>
         </plugin>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-                <execution>
-                    <phase>prepare-package</phase>
-                    <id>download-libraries</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>com.oracle.graalvm.codeonline.js.DownloadLibraries</mainClass>
-                        <arguments>${project.build.directory}/download/</arguments>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
       </plugins>
   </build>
   <dependencies>
