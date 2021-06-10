@@ -2,8 +2,12 @@ package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.js.PlatformServices;
 
+/**
+ * Web browser entry point.
+ */
 public class BrowserMain {
     private BrowserMain() {
+        throw new UnsupportedOperationException();
     }
 
     public static void main(String... args) throws Exception {

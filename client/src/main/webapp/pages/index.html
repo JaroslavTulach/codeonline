@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="stylesheet" href="index.css">
+        <meta charset="utf-8">
+        <title>CodeOnline Test</title>
+        <link rel="stylesheet" href="../../../../../js/target/download/codemirror.css">
+        <link rel="stylesheet" href="../../../../../js/target/download/show-hint.css">
     </head>
     <body>
-        <h1>Words Demo</h1>
-        <input data-bind="textInput:  message">
-        <br>
-        <button data-bind="enable: !rotating(), click: $root.turnAnimationOn">Start</button>
-        <button data-bind="enable: rotating, click: $root.turnAnimationOff">Stop</button>
-        <button data-bind="enable: !rotating(), click: $root.rotate5s">Rotate Few Seconds</button>
-        <button data-bind="click: $root.showScreenSize">Screen Size!</button>
-
-        <div id="scene">
-            <span id="words" data-bind="foreach: words">
-                <span data-bind="text: $data, css: { 'rotate' : $root.rotating } "></span>
-            </span>
-        </div>
-        <!-- Remove this line to remove the button bar in the footer --> 
-        <script async=true src="http://dukescript.com/presenters/welcome.js"></script>
-<!-- ${browser.bootstrap} -->
+        <h1>First code snippet</h1>
+        <textarea class="codeonline">
+            public class Main {
+                public static void main(String[] args) {
+                    System.out.println("Hello World!");
+                }
+            }
+        </textarea>
+        <h1>Second code snippet</h1>
+        <textarea class="codeonline">
+            public class Main {
+                public static void main(String[] args) {
+                    throw new UnsupportedOperationException("No more snippets!");
+                }
+            }
+        </textarea>
+        <script src="../../../../../js/target/download/codemirror.js"></script>
+        <script src="../../../../../js/target/download/show-hint.js"></script>
+        <script src="../../../../../js/target/download/clike.js"></script>
+        <!-- ${browser.bootstrap} -->
     </body>
 </html>

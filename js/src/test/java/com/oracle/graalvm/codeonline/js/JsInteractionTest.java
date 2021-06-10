@@ -16,23 +16,4 @@ public class JsInteractionTest {
     @Test
     public void emptyTest() {
     }
-
-    @Test
-    public void testCallbackFromJavaScript() throws Exception {
-        PlatformServices.installConfirmPolyfill();
-        class R implements Runnable {
-            int called;
-
-            @Override
-            public void run() {
-                called++;
-            }
-        }
-        R callback = new R();
-        
-        final PlatformServices services = new PlatformServices();
-        services.confirmByUser("Hello", callback);
-        
-        assertEquals("One immediate callback", callback.called, 1);
-    }
 }

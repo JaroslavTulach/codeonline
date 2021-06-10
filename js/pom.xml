@@ -79,6 +79,58 @@
                   <obfuscation>NONE</obfuscation>
               </configuration>
           </plugin>
+        <plugin>
+            <groupId>com.dukescript.libraries</groupId>
+            <artifactId>typings-maven-plugin</artifactId>
+            <version>1.0-SNAPSHOT</version> <!-- check for the latest! -->
+            <executions>
+                <execution>
+                    <id>generate-sources</id>
+                    <goals>
+                        <goal>generate</goal>
+                    </goals>
+                    <configuration>
+                        <typings>${basedir}/src/main/ts/definitelytyped/codemirror/codemirror.d.ts</typings>
+                        <package>net.java.html.lib.codemirror</package>
+                        <imports>
+                            <import>net.java.html.lib.dom</import>
+                        </imports>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>generate-sourcesb</id>
+                    <goals>
+                        <goal>generate</goal>
+                    </goals>
+                    <configuration>
+                        <typings>${basedir}/src/main/ts/definitelytyped/codemirror/codemirror-showhint.d.ts</typings>
+                        <package>net.java.html.lib.codemirror.showhint</package>
+                        <imports>
+                            <import>net.java.html.lib.dom</import>
+                            <import>net.java.html.lib.codemirror</import>
+                        </imports>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+                <execution>
+                    <phase>prepare-package</phase>
+                    <id>download-libraries</id>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                    <configuration>
+                        <mainClass>com.oracle.graalvm.codeonline.js.DownloadLibraries</mainClass>
+                        <arguments>${project.build.directory}/download/</arguments>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
       </plugins>
   </build>
   <dependencies>
@@ -91,6 +143,16 @@
         <groupId>com.dukescript.api</groupId>
         <artifactId>junit-osgi</artifactId>
         <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.dukescript.libraries</groupId>
+        <artifactId>net.java.html.lib</artifactId>
+        <version>0.5</version>
+    </dependency>
+    <dependency>
+        <groupId>com.dukescript.libraries</groupId>
+        <artifactId>net.java.html.lib.dom</artifactId>
+        <version>0.5</version>
     </dependency>
     <dependency>
         <groupId>com.dukescript.api</groupId>
