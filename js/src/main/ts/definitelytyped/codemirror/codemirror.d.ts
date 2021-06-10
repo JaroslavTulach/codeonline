@@ -1121,6 +1121,6 @@ declare namespace CodeMirror {
     }
 }
 
-declare module "codemirror" {
+//declare module "codemirror" {
     export = CodeMirror;
-}
+//}

@@ -67,6 +67,6 @@ declare namespace CodeMirror {
     }
 }
 
-declare module "codemirror/addon/hint/show-hint" {
+//declare module "codemirror/addon/hint/show-hint" {
     export = CodeMirror;
-}
+//}

@@ -82,7 +82,7 @@
         <plugin>
             <groupId>com.dukescript.libraries</groupId>
             <artifactId>typings-maven-plugin</artifactId>
-            <version>1.0-SNAPSHOT</version> <!-- check for the latest! -->
+            <version>0.5</version>
             <executions>
                 <execution>
                     <id>generate-sources</id>
