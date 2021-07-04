@@ -5,6 +5,11 @@
         <title>CodeOnline Test</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/codemirror.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/addon/hint/show-hint.css">
+        <style>
+            .codeonline-error {border-bottom: dotted 2px red}
+            .codeonline-warning {background-color: yellow}
+            .codeonline-note {border-bottom: dotted 1px blue}
+        </style>
     </head>
     <body>
         <h1>First code snippet</h1>
@@ -23,6 +28,16 @@
                 }
             }
         </textarea>
+        <h1>Third code snippet</h1>
+        <div>
+            <pre class="codeonline">
+                public class Main {
+                    public static void main(String[] args) {
+                        this one is even more broken
+                    }
+                }
+            </pre>
+        </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/codemirror.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/addon/hint/show-hint.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/mode/clike/clike.js"></script>

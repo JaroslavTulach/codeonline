@@ -14,28 +14,33 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline;
+package com.oracle.graalvm.codeonline.files;
 
-import com.oracle.graalvm.codeonline.js.PlatformServices;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 
 /**
- * Web browser entry point.
+ * Used by {@link JavaFileManagerImpl} to represent a file.
  */
-public class BrowserMain {
-    private BrowserMain() {
-        throw new UnsupportedOperationException();
+abstract class FileContents {
+    private long lastModified;
+    {
+        touch();
     }
 
-    public static void main(String... args) throws Exception {
-        Main.onPageLoad(new HTML5Services());
+    protected final void touch() {
+        lastModified = System.currentTimeMillis();
     }
 
-    private static final class HTML5Services extends PlatformServices {
-        @Override
-        public InputStream openExternalResource(String name) {
-            // TODO use XHR
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+    public abstract InputStream openInputStream();
+    public abstract OutputStream openOutputStream();
+    public abstract Reader openReader();
+    public abstract CharSequence getCharContent();
+    public abstract Writer openWriter();
+
+    public final long lastModified() {
+        return lastModified;
     }
 }

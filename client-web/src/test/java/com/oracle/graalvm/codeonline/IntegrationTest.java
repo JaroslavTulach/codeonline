@@ -45,22 +45,5 @@ import org.junit.runner.RunWith;
 )
 public class IntegrationTest {
     @Test public void testUIModelUI() {
-        Data model = new Data();
-        model.applyBindings();
-        model.setMessage("Hello World by JavaFX WebView");
-
-        java.util.List<String> arr = model.getWords();
-        assertEquals("Six words always", arr.size(), 6);
-        assertEquals("Hello is the first word", "Hello", arr.get(0));
-        assertEquals("World is the second word", "World", arr.get(1));
-        assertEquals("JavaFX", arr.get(3));
-
-        model.setMessage("Hello World by Bck2Brwsr Virtual Machine");
-
-        arr = model.getWords();
-        assertEquals("Six words always", arr.size(), 6);
-        assertEquals("Hello is the first word", "Hello", arr.get(0));
-        assertEquals("World is the second word", "World", arr.get(1));
-        assertEquals("Bck2Brwsr", arr.get(3));
     }
 }

@@ -16,10 +16,11 @@
 
 package com.oracle.graalvm.codeonline.js;
 
+import java.io.InputStream;
 import net.java.html.lib.Modules;
 import net.java.html.lib.Objs;
 
-public class PlatformServices {
+public abstract class PlatformServices {
     public void registerCodeMirrorModule() {
         new Modules.Provider() {
             @Override
@@ -30,4 +31,6 @@ public class PlatformServices {
             }
         };
     }
+
+    public abstract InputStream openExternalResource(String name);
 }

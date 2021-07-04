@@ -17,11 +17,12 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.js.PlatformServices;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.file.Paths;
 import net.java.html.boot.BrowserBuilder;
-import net.java.html.lib.Objs;
-import net.java.html.lib.codemirror.CodeMirror.EditorConfiguration;
 import net.java.html.lib.dom.Element;
-import net.java.html.lib.dom.HTMLTextAreaElement;
 import net.java.html.lib.dom.NodeListOf;
 
 /**
@@ -45,17 +46,18 @@ public final class Main {
         services.registerCodeMirrorModule();
         net.java.html.lib.codemirror.CodeMirror.Exports.registerHelper("hint", "clike", new JavaHintHelper());
 
-        EditorConfiguration conf = new Objs().$cast(EditorConfiguration.class);
-        conf.lineNumbers.set(true);
-        conf.mode.set("text/x-java");
-        conf.extraKeys.set(Objs.$as(Objs.create(null)).$set("Ctrl-Space", "autocomplete"));
+        NodeListOf<?> elems = net.java.html.lib.dom.Exports.document.getElementsByClassName("codeonline");
 
-        NodeListOf<Element> elems = net.java.html.lib.dom.Exports.document.getElementsByClassName("codeonline");
-        for(Element element : new NodeListWrapper<>(elems, Element::$as)) {
-            if(element.nodeName.get().equalsIgnoreCase("textarea"))
-                net.java.html.lib.codemirror.CodeMirror.Exports.fromTextArea(element.$cast(HTMLTextAreaElement.class), conf);
-            else
-                throw new RuntimeException("HTML class codeonline is only applicable to textarea elements.");
+        // Copy the list because we will be removing from it.
+        int numElems = elems.length().intValue();
+        Element[] elemsCopy = new Element[numElems];
+        for(int i = 0; i < numElems; i++) {
+            elemsCopy[i] = Element.$as(elems.$get(i));
+        }
+
+        // Replace each element with an interactive editor.
+        for(Element element : elemsCopy) {
+            Editor.from(element, services);
         }
     }
 
@@ -64,6 +66,13 @@ public final class Main {
     }
 
     private static final class DesktopServices extends PlatformServices {
-        // default behavior is enough for now
+        @Override
+        public InputStream openExternalResource(String name) {
+            try {
+                return new FileInputStream(Paths.get("target", "extres", name).toFile());
+            } catch (FileNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 }
