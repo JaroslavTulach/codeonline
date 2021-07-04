@@ -89,8 +89,7 @@ public final class PrepareClassPath {
                     packageName = entName.substring(0, lastSlash);
                     simpleName = entName.substring(lastSlash + 1, suffixIndex);
                 }
-                byte[] contents = in.readAllBytes();
-                // TODO remove method bodies from class file
+                byte[] contents = MethodBodyEraser.eraseMethodBodies(in.readAllBytes());
                 HashMap<String, byte[]> classes = packages.computeIfAbsent(packageName, ignoredPackageName -> new HashMap<>());
                 classes.putIfAbsent(simpleName, contents);
             }
