@@ -17,6 +17,7 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
+import com.sun.tools.javac.api.JavacTool;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +32,7 @@ import javax.tools.StandardLocation;
  * It stores all information for the compiler and the result of the compilation.
  */
 public final class Compilation {
-    private final JavaCompiler compiler = javax.tools.ToolProvider.getSystemJavaCompiler();
+    private final JavacTool compiler = JavacTool.create();
     private final ArrayList<Diagnostic> diagnostics = new ArrayList<>();
     private final List<Diagnostic> diagnosticsView = Collections.unmodifiableList(diagnostics);
 
