@@ -16,11 +16,16 @@
 
 package com.oracle.graalvm.codeonline;
 
+import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
+import com.oracle.graalvm.codeonline.js.TaskQueue;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import net.java.html.BrwsrCtx;
 import net.java.html.boot.BrowserBuilder;
 import net.java.html.lib.dom.Element;
 import net.java.html.lib.dom.NodeListOf;
@@ -65,14 +70,40 @@ public final class Main {
         onPageLoad(new DesktopServices());
     }
 
+    public static Object executeTask(Object request, PlatformServices platformServices) {
+        String source = (String) request;
+        Compilation c = new Compilation();
+        JavaFileManagerImpl files = new JavaFileManagerImpl.Builder(platformServices)
+                .addSource("Main", source)
+                .build();
+        c.setFiles(files);
+        c.compile();
+        return c.getDiagnostics();
+    }
+
     private static final class DesktopServices extends PlatformServices {
         @Override
-        public InputStream openExternalResource(String name) {
-            try {
-                return new FileInputStream(Paths.get("target", "extres", name).toFile());
-            } catch (FileNotFoundException ex) {
-                throw new RuntimeException(ex);
-            }
+        public InputStream openExternalResource(String name) throws IOException {
+            return new FileInputStream(Paths.get("target", "extres", name).toFile());
         }
+
+        @Override
+        public TaskQueue<Object, Object> getWorkerQueue() {
+            return workerQueue;
+        }
+
+        private final TaskQueue<Object, Object> workerQueue = new TaskQueue<Object, Object>() {
+            private final Executor uiExecutor = BrwsrCtx.findDefault(Main.class);
+            private final Executor workerExecutor = Executors.newSingleThreadExecutor();
+
+            @Override
+            protected void sendTask(Object request) {
+                PlatformServices platformServices = DesktopServices.this;
+                workerExecutor.execute(() -> {
+                    Object response = executeTask(request, platformServices);
+                    uiExecutor.execute(() -> onResponse(response));
+                });
+            }
+        };
     }
 }

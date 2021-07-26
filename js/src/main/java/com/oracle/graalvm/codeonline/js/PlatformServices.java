@@ -16,6 +16,7 @@
 
 package com.oracle.graalvm.codeonline.js;
 
+import java.io.IOException;
 import java.io.InputStream;
 import net.java.html.lib.Modules;
 import net.java.html.lib.Objs;
@@ -32,5 +33,7 @@ public abstract class PlatformServices {
         };
     }
 
-    public abstract InputStream openExternalResource(String name);
+    public abstract InputStream openExternalResource(String name) throws IOException;
+
+    public abstract TaskQueue<Object, Object> getWorkerQueue();
 }

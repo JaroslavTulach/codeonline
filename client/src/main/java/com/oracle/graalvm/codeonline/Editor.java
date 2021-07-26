@@ -16,7 +16,6 @@
 
 package com.oracle.graalvm.codeonline;
 
-import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +93,7 @@ public class Editor {
             else
                 result.append(line);
             result.append('\n');
-            if(!line.isBlank())
+            if(!line.isEmpty())
                 length = result.length();
         }
         return result.substring(0, length);
@@ -107,20 +106,16 @@ public class Editor {
     }
 
     private void compile() {
-        Compilation c = new Compilation();
-        JavaFileManagerImpl files = new JavaFileManagerImpl.Builder(platformServices)
-                .addSource(getClassName(), getJavaSource())
-                .build();
-        c.setFiles(files);
-        c.compile();
-        List<Diagnostic> diags = c.getDiagnostics();
-        for(TextMarker marker : markers) {
-            marker.clear();
-        }
-        for(Diagnostic<?> diag : diags) {
-            reportError(diag);
-            highlightError(diag);
-        }
+        platformServices.getWorkerQueue().enqueue(getJavaSource(), response -> {
+            List<Diagnostic> diags = (List<Diagnostic>) response;
+            for(TextMarker marker : markers) {
+                marker.clear();
+            }
+            for(Diagnostic<?> diag : diags) {
+                reportError(diag);
+                highlightError(diag);
+            }
+        });
     }
 
     private void reportError(Diagnostic<?> diag) {

@@ -17,7 +17,13 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.js.PlatformServices;
+import com.oracle.graalvm.codeonline.js.TaskQueue;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import net.java.html.js.JavaScriptBody;
 
 /**
  * Web browser entry point.
@@ -28,14 +34,58 @@ public class BrowserMain {
     }
 
     public static void main(String... args) throws Exception {
-        Main.onPageLoad(new HTML5Services());
+        if(isMainThread())
+            Main.onPageLoad(new HTML5Services());
+        else
+            WebWorkerServices.workerMain(request -> Main.executeTask(request, new WebWorkerServices()));
     }
+
+    @JavaScriptBody(args = {}, body = "return 'window' in self;")
+    private static native boolean isMainThread();
 
     private static final class HTML5Services extends PlatformServices {
         @Override
-        public InputStream openExternalResource(String name) {
-            // TODO use XHR
-            throw new UnsupportedOperationException("Not supported yet.");
+        public InputStream openExternalResource(String name) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @JavaScriptBody(args = {"c"}, body = "window.codeonlineWorker.onmessage = function(event) { c.@java.util.function.Consumer::accept(Ljava/lang/Object;)(event.data); };", javacall = true)
+        static native void registerWorkerCallback(Consumer<Object> c);
+
+        @JavaScriptBody(args = {"request"}, body = "window.codeonlineWorker.postMessage(request);")
+        static native void sendTask(Object request);
+
+        @Override
+        public TaskQueue<Object, Object> getWorkerQueue() {
+            return workerQueue;
+        }
+
+        private final TaskQueue<Object, Object> workerQueue = isMainThread() ? new TaskQueue<Object, Object>() {
+            {
+                registerWorkerCallback(this::onResponse);
+            }
+
+            @Override
+            protected void sendTask(Object request) {
+                HTML5Services.sendTask(request);
+            }
+        } : null;
+    }
+
+    private static final class WebWorkerServices extends PlatformServices {
+        @Override
+        public InputStream openExternalResource(String name) throws IOException {
+            // Relative URL, but has to specify protocol so that the correct handler is used.
+            // TODO detect HTTPS
+            return new URL("http:extres/" + name).openStream();
+        }
+
+        @JavaScriptBody(args = {"f"}, body = "self.onmessage = function(event) { self.postMessage(f.@java.util.function.Function::apply(Ljava/lang/Object;)(event.data)); };", javacall = true)
+        static native boolean workerMain(Function<?, ?> f);
+
+        @Override
+        public TaskQueue getWorkerQueue() {
+            throw new UnsupportedOperationException();
         }
     }
 }
