@@ -16,6 +16,7 @@
 
 package com.oracle.graalvm.codeonline.build;
 
+import com.oracle.graalvm.codeonline.ntar.NtarWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,7 +29,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.StandardLocation;
 
@@ -100,13 +100,11 @@ public final class PrepareClassPath {
             String outFileName = location + "-" + packageName + ".zip";
             outputFileList.accept(outFileName);
             File outFile = new File(outDir, outFileName);
-            try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFile))) {
+            try(NtarWriter out = new NtarWriter(new FileOutputStream(outFile))) {
                 for(Map.Entry<String, byte[]> entry : classes.entrySet()) {
                     String simpleName = entry.getKey();
                     byte[] contents = entry.getValue();
-                    out.putNextEntry(new ZipEntry(simpleName));
-                    out.write(contents);
-                    out.closeEntry();
+                    out.put(simpleName, contents);
                 }
             }
         }

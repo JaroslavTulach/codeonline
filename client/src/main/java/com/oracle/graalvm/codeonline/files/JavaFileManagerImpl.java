@@ -17,6 +17,7 @@
 package com.oracle.graalvm.codeonline.files;
 
 import com.oracle.graalvm.codeonline.js.PlatformServices;
+import com.oracle.graalvm.codeonline.ntar.NtarReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,8 +31,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.tools.FileObject;
@@ -154,20 +153,12 @@ public final class JavaFileManagerImpl implements JavaFileManager {
         if(!loadedPackageZips.add(fileName))
             return;
         String qualification = packageName.isEmpty() ? "" : packageName + '.';
-        try(ZipInputStream zip = new ZipInputStream(platformServices.openExternalResource(fileName))) {
-            for(;;) {
-                ZipEntry entry = zip.getNextEntry();
-                if(entry == null)
-                    break;
-                String entName = entry.getName();
-                byte[] contents = zip.readAllBytes();
-                //
+        try(NtarReader zip = new NtarReader(platformServices.openExternalResource(fileName))) {
+            for(NtarReader.Entry entry : zip) {
                 JavaFileObject.Kind kind = JavaFileObject.Kind.CLASS;
-                String uri = getJavaFileObjectName(location, qualification + entName, kind);
-                filesMap.put(uri, new JavaFileObjectImpl(this, uri, new BinaryFileContents(contents), kind));
+                String uri = getJavaFileObjectName(location, qualification + entry.name, kind);
+                filesMap.put(uri, new JavaFileObjectImpl(this, uri, new BinaryFileContents(entry.content), kind));
             }
-        } catch(IOException ex) {
-            throw new RuntimeException(ex);
         }
     }
 
@@ -187,7 +178,7 @@ public final class JavaFileManagerImpl implements JavaFileManager {
         }
     }
 
-    private boolean isPackageAvailable(String requestedZip) {
+    private boolean isPackageAvailable(String requestedZip) throws IOException {
         if(availablePackageZips.isEmpty()) {
             try(Scanner s = new Scanner(platformServices.openExternalResource("available.txt"))) {
                 while(s.hasNextLine())
