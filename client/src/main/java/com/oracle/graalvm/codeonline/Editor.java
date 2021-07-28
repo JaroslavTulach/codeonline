@@ -17,9 +17,10 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.js.PlatformServices;
+import com.oracle.graalvm.codeonline.json.CompilationResult;
+import com.oracle.graalvm.codeonline.json.CompilationResultModel;
+import com.oracle.graalvm.codeonline.json.Diag;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import javax.tools.Diagnostic;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
@@ -107,22 +108,22 @@ public class Editor {
 
     private void compile() {
         platformServices.getWorkerQueue().enqueue(getJavaSource(), response -> {
-            List<Diagnostic> diags = (List<Diagnostic>) response;
+            CompilationResult cr = CompilationResultModel.parseCompilationResult(response);
             for(TextMarker marker : markers) {
                 marker.clear();
             }
-            for(Diagnostic<?> diag : diags) {
+            for(Diag diag : cr.getDiagnostics()) {
                 reportError(diag);
                 highlightError(diag);
             }
         });
     }
 
-    private void reportError(Diagnostic<?> diag) {
+    private void reportError(Diag diag) {
         // TODO
     }
 
-    private void highlightError(Diagnostic<?> diag) {
+    private void highlightError(Diag diag) {
         long pos = diag.getPosition();
         if(pos == Diagnostic.NOPOS)
             return;
@@ -151,7 +152,7 @@ public class Editor {
                 options.className.set("codeonline-note");
                 break;
         }
-        options.title.set(diag.getMessage(Locale.getDefault()));
+        options.title.set(diag.getMessage());
         TextMarker marker = codeMirror.getDoc().markText(start, end, options);
         markers.add(marker);
     }

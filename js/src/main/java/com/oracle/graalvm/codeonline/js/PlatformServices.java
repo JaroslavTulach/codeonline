@@ -35,5 +35,5 @@ public abstract class PlatformServices {
 
     public abstract InputStream openExternalResource(String name) throws IOException;
 
-    public abstract TaskQueue<Object, Object> getWorkerQueue();
+    public abstract TaskQueue<String, String> getWorkerQueue();
 }

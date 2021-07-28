@@ -19,6 +19,7 @@ package com.oracle.graalvm.codeonline;
 import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
 import com.oracle.graalvm.codeonline.js.TaskQueue;
+import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,15 +71,15 @@ public final class Main {
         onPageLoad(new DesktopServices());
     }
 
-    public static Object executeTask(Object request, PlatformServices platformServices) {
-        String source = (String) request;
+    public static String executeTask(String request, PlatformServices platformServices) {
+        String source = request;
         Compilation c = new Compilation();
         JavaFileManagerImpl files = new JavaFileManagerImpl.Builder(platformServices)
                 .addSource("Main", source)
                 .build();
         c.setFiles(files);
-        c.compile();
-        return c.getDiagnostics();
+        boolean success = c.compile();
+        return CompilationResultModel.createCompilationResult(success, c.getDiagnostics()).toString();
     }
 
     private static final class DesktopServices extends PlatformServices {
@@ -88,19 +89,19 @@ public final class Main {
         }
 
         @Override
-        public TaskQueue<Object, Object> getWorkerQueue() {
+        public TaskQueue<String, String> getWorkerQueue() {
             return workerQueue;
         }
 
-        private final TaskQueue<Object, Object> workerQueue = new TaskQueue<Object, Object>() {
+        private final TaskQueue<String, String> workerQueue = new TaskQueue<String, String>() {
             private final Executor uiExecutor = BrwsrCtx.findDefault(Main.class);
             private final Executor workerExecutor = Executors.newSingleThreadExecutor();
 
             @Override
-            protected void sendTask(Object request) {
+            protected void sendTask(String request) {
                 PlatformServices platformServices = DesktopServices.this;
                 workerExecutor.execute(() -> {
-                    Object response = executeTask(request, platformServices);
+                    String response = executeTask(request, platformServices);
                     uiExecutor.execute(() -> onResponse(response));
                 });
             }

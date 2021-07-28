@@ -42,7 +42,7 @@ public final class Compilation {
         this.files = files;
     }
 
-    public void compile() {
+    public boolean compile() {
         System.out.println("Compiling...");
         diagnostics.clear();
         try {
@@ -55,7 +55,8 @@ public final class Compilation {
                     null, // Iterable<String> classes to be processed by annotation processing, null ~ no classes
                     Arrays.asList(f)
             );
-            System.out.println("Result: " + task.call());
+            boolean success = task.call();
+            System.out.println("Result: " + success);
 
             System.out.println("Diagnostics:");
             for(Diagnostic diag : diagnostics)
@@ -63,8 +64,10 @@ public final class Compilation {
 
             System.out.println("Files:");
             files.debugDump();
+            return success;
         } catch(Throwable t) {
             t.printStackTrace();
+            return false;
         }
     }
 
