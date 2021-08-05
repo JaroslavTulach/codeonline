@@ -89,7 +89,7 @@ public final class PrepareClassPath {
                     packageName = entName.substring(0, lastSlash);
                     simpleName = entName.substring(lastSlash + 1, suffixIndex);
                 }
-                byte[] contents = MethodBodyEraser.eraseMethodBodies(in.readAllBytes());
+                byte[] contents = MethodBodyEraser.eraseMethodBodies(InputStreams.readAllBytes(in));
                 HashMap<String, byte[]> classes = packages.computeIfAbsent(packageName, ignoredPackageName -> new HashMap<>());
                 classes.putIfAbsent(simpleName, contents);
             }

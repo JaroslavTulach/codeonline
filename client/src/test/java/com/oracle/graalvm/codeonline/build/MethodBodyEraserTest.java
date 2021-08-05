@@ -30,7 +30,7 @@ public class MethodBodyEraserTest {
 
     @BeforeClass
     public static void setUpClass() throws IOException {
-        origBytecode = MethodBodyEraserTest.class.getResourceAsStream(SIMPLE_CLASS_NAME + ".class").readAllBytes();
+        origBytecode = InputStreams.readAllBytes(MethodBodyEraserTest.class.getResourceAsStream(SIMPLE_CLASS_NAME + ".class"));
     }
 
     @Test
