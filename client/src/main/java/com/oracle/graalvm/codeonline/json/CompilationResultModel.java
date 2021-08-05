@@ -16,7 +16,6 @@
 
 package com.oracle.graalvm.codeonline.json;
 
-import com.oracle.graalvm.codeonline.Editor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
@@ -37,7 +36,7 @@ public class CompilationResultModel {
 
     public static CompilationResult parseCompilationResult(String json) {
         try {
-            return Models.parse(BrwsrCtx.findDefault(Editor.class), CompilationResult.class, new ByteArrayInputStream(json.getBytes()));
+            return Models.parse(BrwsrCtx.findDefault(CompilationResult.class), CompilationResult.class, new ByteArrayInputStream(json.getBytes()));
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
