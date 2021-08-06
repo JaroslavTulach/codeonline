@@ -20,6 +20,7 @@ import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
 import com.oracle.graalvm.codeonline.js.TaskQueue;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
+import com.oracle.graalvm.codeonline.json.CompletionListModel;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +51,7 @@ public final class Main {
 
     public static void onPageLoad(PlatformServices services) throws Exception {
         services.registerCodeMirrorModule();
-        net.java.html.lib.codemirror.CodeMirror.Exports.registerHelper("hint", "clike", new JavaHintHelper());
+        net.java.html.lib.codemirror.CodeMirror.Exports.registerHelper("hint", "clike", JavaHintHelper.create());
 
         NodeListOf<?> elems = net.java.html.lib.dom.Exports.document.getElementsByClassName("codeonline");
 
@@ -72,6 +73,19 @@ public final class Main {
     }
 
     public static String executeTask(String request, PlatformServices platformServices) {
+        // TODO use JSON, detect class name
+        if(request.startsWith("/")) {
+            String[] split = request.split("/", 3);
+            int pos = Integer.parseInt(split[1]);
+            String source = split[2];
+            Compilation c = new Compilation();
+            JavaFileManagerImpl files = new JavaFileManagerImpl.Builder(platformServices)
+                    .addSource("Main", source)
+                    .build();
+            c.setFiles(files);
+            boolean success = c.completion(pos);
+            return CompletionListModel.createCompletionList(success, c.getCompletions()).toString();
+        }
         String source = request;
         Compilation c = new Compilation();
         JavaFileManagerImpl files = new JavaFileManagerImpl.Builder(platformServices)

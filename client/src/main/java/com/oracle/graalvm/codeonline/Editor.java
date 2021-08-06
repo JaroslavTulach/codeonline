@@ -19,16 +19,25 @@ package com.oracle.graalvm.codeonline;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
 import com.oracle.graalvm.codeonline.json.CompilationResult;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
+import com.oracle.graalvm.codeonline.json.CompletionItem;
+import com.oracle.graalvm.codeonline.json.CompletionList;
+import com.oracle.graalvm.codeonline.json.CompletionListModel;
 import com.oracle.graalvm.codeonline.json.Diag;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 import javax.tools.Diagnostic;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
+import net.java.html.lib.codemirror.CodeMirror.Doc;
 import net.java.html.lib.codemirror.CodeMirror.EditorConfiguration;
 import net.java.html.lib.codemirror.CodeMirror.EditorFromTextArea;
 import net.java.html.lib.codemirror.CodeMirror.Position;
 import net.java.html.lib.codemirror.CodeMirror.TextMarker;
 import net.java.html.lib.codemirror.CodeMirror.TextMarkerOptions;
+import net.java.html.lib.codemirror.showhint.CodeMirror.Hint;
+import net.java.html.lib.codemirror.showhint.CodeMirror.Hints;
+import net.java.html.lib.codemirror.showhint.CodeMirror.ShowHintOptions;
 import net.java.html.lib.dom.Element;
 import net.java.html.lib.dom.EventListener;
 import net.java.html.lib.dom.HTMLElement;
@@ -43,11 +52,13 @@ import net.java.html.lib.dom.HTMLTextAreaElement;
  * It wraps a CodeMirror editor and adds error highlighting and auto-complete.
  */
 public class Editor {
+    private static final String EDITOR_PROPERTY = "codeonline.Editor";
     private static final EditorConfiguration CODEMIRROR_CONF;
 
     private final PlatformServices platformServices;
     private final ArrayList<TextMarker> markers = new ArrayList<>();
     private EditorFromTextArea codeMirror;
+    private Doc doc;
 
     static {
         EditorConfiguration conf = new Objs().$cast(EditorConfiguration.class);
@@ -62,6 +73,10 @@ public class Editor {
         this.platformServices = platformServices;
     }
 
+    public static Editor getInstance(EditorFromTextArea codeMirror) {
+        return (Editor) codeMirror.$get(EDITOR_PROPERTY);
+    }
+
     private void initialize(Element oldElement) {
         HTMLElement newElement = document.createElement("div");
         newElement.appendChild(createButton("Compile", this::compile));
@@ -72,6 +87,8 @@ public class Editor {
         ta.value.set(unIndent(oldElement.textContent()));
         oldElement.parentNode().replaceChild(newElement, oldElement);
         codeMirror = net.java.html.lib.codemirror.CodeMirror.Exports.fromTextArea(ta, CODEMIRROR_CONF);
+        doc = codeMirror.getDoc();
+        codeMirror.$set(EDITOR_PROPERTY, this);
     }
 
     private static String unIndent(String code) {
@@ -191,5 +208,85 @@ public class Editor {
             return null;
         })));
         return button;
+    }
+
+    private String hintPrefix;
+    private int currentHintLine, currentHintTokenStart;
+    private List<CompletionItem> hintItems;
+
+    private boolean hintActive() {
+        return hintPrefix != null;
+    }
+
+    private boolean hintRelevant(Position cur0) {
+        int line = cur0.line().intValue();
+        int col = cur0.ch().intValue();
+        hintPrefix = hintPrefix(line, col);
+        return hintPrefix != null;
+    }
+
+    private String hintPrefix(int newLine, int newCol) {
+        if(newLine != currentHintLine)
+            return null;
+        if(newCol < currentHintTokenStart)
+            return null;
+        if(newCol == currentHintTokenStart)
+            return "";
+        String line = doc.getLine(newLine);
+        for(int i = currentHintTokenStart; i < newCol; i++) {
+            if(!Character.isJavaIdentifierPart(line.charAt(i)))
+                return null;
+        }
+        return line.substring(currentHintTokenStart, newCol);
+    }
+
+    private int setHintToken(int line, int col) {
+        String s = doc.getLine(line);
+        int i = col;
+        while(i > 0 && Character.isJavaIdentifierPart(s.charAt(i - 1)))
+            i--;
+        currentHintLine = line;
+        currentHintTokenStart = i;
+        return col - i;
+    }
+
+    public void hint(Function cb, ShowHintOptions opts) {
+        opts.completeSingle.set(false);
+        Position cur0 = doc.getCursor();
+        if(hintActive() && hintRelevant(cur0)) {
+            cb.apply(null, makeHints());
+            return;
+        }
+        long offset = (long) doc.indexFromPos(cur0) - setHintToken(cur0.line().intValue(), cur0.ch().intValue());
+        String request = "/" + offset + "/" + doc.getValue();
+        platformServices.getWorkerQueue().enqueue(request, response -> {
+            Position cur1 = doc.getCursor();
+            if(hintRelevant(cur1)) {
+                CompletionList cl = CompletionListModel.parseCompletionList(response);
+                hintItems = cl.getItems();
+                cb.apply(null, makeHints());
+            }
+        });
+    }
+
+    private static Hints makeHints(Stream<Hint> list, Position from, Position to) {
+        Hints hints = new Objs().$cast(Hints.class);
+        ((Objs.Property) hints.list).set(list.toArray());
+        ((Objs.Property) hints.from).set(from);
+        ((Objs.Property) hints.to).set(to);
+        return hints;
+    }
+
+    private Hints makeHints() {
+        Stream<Hint> list = hintItems.stream().filter(it -> it.getText().startsWith(hintPrefix)).map(Editor::makeHint);
+        return makeHints(list, makePosition(currentHintLine, currentHintTokenStart), doc.getCursor());
+    }
+
+    private static Hint makeHint(CompletionItem ci) {
+        Hint hint = new Objs().$cast(Hint.class);
+        hint.text.set(ci.getText());
+        hint.displayText.set(ci.getDisplayText());
+        hint.className.set(ci.getClassName());
+        return hint;
     }
 }

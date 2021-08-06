@@ -17,6 +17,9 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
+import com.oracle.graalvm.codeonline.nbjava.CompilationInfo;
+import com.oracle.graalvm.codeonline.nbjava.JavaCompletionItem;
+import com.oracle.graalvm.codeonline.nbjava.JavaCompletionQuery;
 import com.sun.tools.javac.api.JavacTool;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +38,7 @@ public final class Compilation {
     private final JavacTool compiler = JavacTool.create();
     private final ArrayList<Diagnostic> diagnostics = new ArrayList<>();
     private final List<Diagnostic> diagnosticsView = Collections.unmodifiableList(diagnostics);
+    private List<? extends JavaCompletionItem> completions;
 
     private JavaFileManagerImpl files;
 
@@ -73,5 +77,21 @@ public final class Compilation {
 
     public List<Diagnostic> getDiagnostics() {
         return diagnosticsView;
+    }
+
+    public boolean completion(int offset) {
+        completions = Collections.emptyList();
+        try {
+            JavaFileObject f = files.getJavaFileForInput(StandardLocation.SOURCE_PATH, "Main", JavaFileObject.Kind.SOURCE);
+            completions = JavaCompletionQuery.query(new CompilationInfo(f, files), JavaCompletionQuery.COMPLETION_QUERY_TYPE, offset);
+            return true;
+        } catch(Throwable t) {
+            t.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<? extends JavaCompletionItem> getCompletions() {
+        return completions;
     }
 }

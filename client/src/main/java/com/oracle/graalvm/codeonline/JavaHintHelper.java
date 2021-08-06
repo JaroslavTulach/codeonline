@@ -17,27 +17,25 @@
 package com.oracle.graalvm.codeonline;
 
 import net.java.html.lib.Function;
-import net.java.html.lib.codemirror.CodeMirror.Doc;
-import net.java.html.lib.codemirror.CodeMirror.Position;
-import net.java.html.lib.codemirror.showhint.CodeMirror.Hints;
+import net.java.html.lib.Objs;
+import net.java.html.lib.codemirror.CodeMirror.EditorFromTextArea;
 import net.java.html.lib.codemirror.showhint.CodeMirror.ShowHintOptions;
 
 /**
  * Implements a CodeMirror hint helper using javac.
  */
-public class JavaHintHelper implements Function.A2<Doc, ShowHintOptions, Hints> {
+public class JavaHintHelper implements Function.A3/*<EditorFromTextArea, Function, ShowHintOptions, Hints>*/ {
+    private JavaHintHelper() {}
+
     @Override
-    public Hints call(Doc doc, ShowHintOptions opts) {
-        Position cursor = doc.getCursor();
-        String line = doc.getLine(cursor.line().intValue());
-        int col = cursor.ch().intValue();
-        int start = col, end = col;
-        while(start > 0 && Character.isJavaIdentifierPart(line.charAt(start - 1)))
-            start--;
-        while(end < line.length() && Character.isJavaIdentifierPart(line.charAt(end)))
-            end++;
-        // TODO ask javac
-        System.out.println("CodeOnline: Hint requested: " + line.substring(start, col) + "|" + line.substring(col, end));
+    public Object call(Object doc, Object cb, Object opts) {
+        Editor.getInstance(EditorFromTextArea.$as(doc)).hint(Function.$as(cb), ShowHintOptions.$as(opts));
         return null;
+    }
+
+    public static Objs create() {
+        Objs result = new Objs(new JavaHintHelper());
+        result.$set("async", true);
+        return result;
     }
 }
