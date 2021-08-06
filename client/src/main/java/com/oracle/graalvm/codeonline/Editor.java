@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.tools.Diagnostic;
+import net.java.html.js.JavaScriptBody;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
 import net.java.html.lib.codemirror.CodeMirror.Doc;
@@ -91,6 +92,15 @@ public class Editor {
         codeMirror = net.java.html.lib.codemirror.CodeMirror.Exports.fromTextArea(ta, CODEMIRROR_CONF);
         doc = codeMirror.getDoc();
         codeMirror.$set(EDITOR_PROPERTY, this);
+        on("changes", this::compile);
+        on("cursorActivity", this::updateOrCloseHints);
+    }
+
+    @JavaScriptBody(args = {"codeMirror", "eventName", "handler"}, body = "codeMirror.on(eventName, () => handler.@java.lang.Runnable::run()());", javacall = true)
+    private static native void on(Object codeMirror, String eventName, Runnable handler);
+
+    private void on(String eventName, Runnable handler) {
+        on(Objs.$js(codeMirror), eventName, handler);
     }
 
     private static String unIndent(String code) {
@@ -279,6 +289,11 @@ public class Editor {
                 cb.apply(null, makeHints());
             }
         });
+    }
+
+    private void updateOrCloseHints() {
+        if(hintActive() && hintRelevant(doc.getCursor()))
+            net.java.html.lib.codemirror.showhint.CodeMirror.Exports.showHint(net.java.html.lib.codemirror.showhint.CodeMirror.Doc.$as(codeMirror));
     }
 
     private static Hints makeHints(Stream<Hint> list, Position from, Position to) {
