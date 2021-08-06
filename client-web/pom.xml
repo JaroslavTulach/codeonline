@@ -50,9 +50,6 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
-                    <compilerArguments>
-                        <bootclasspath>netbeans.ignore.jdk.bootclasspath</bootclasspath>
-                    </compilerArguments>
                 </configuration>
             </plugin>
             <plugin>
@@ -377,9 +374,10 @@
         <profile>
             <id>aotjs</id>
             <properties>
-                <browser.bootstrap>initialize aotjs --&gt;
-&lt;script type="text/javascript" src="aot.js"&gt;&lt;/script&gt;
-&lt;!-- end of initialization </browser.bootstrap>
+                <browser.bootstrap><![CDATA[ initialize aotjs -->
+<script type="text/javascript">var codeonlineWorker = new Worker("aot.js");</script>
+<script type="text/javascript" src="aot.js"></script>
+<!-- end of initialization ]]></browser.bootstrap>
             </properties>
             <dependencies>
                 <dependency>
@@ -405,6 +403,13 @@
                                     <mainClass>${project.mainclass}</mainClass>
                                     <outputDir>${project.build.directory}/</outputDir>
                                     <imageName>aot</imageName>
+                                    <buildArgs>
+                                        <buildArg>--enable-url-protocols=http</buildArg>
+                                        <buildArg>-H:-ClosureCompiler</buildArg>
+                                        <buildArg>-H:IncludeResourceBundles=com.sun.tools.javac.resources.compiler,com.sun.tools.javac.resources.javac</buildArg>
+                                        <buildArg>-H:CompilerConfig=CONFIG_JUNIT_BROWSER</buildArg>
+                                        <buildArg>--initialize-at-run-time=net.java.html.lib,com.oracle.graalvm.codeonline.Editor</buildArg>
+                                    </buildArgs>
                                 </configuration>
                             </execution>
                         </executions>
