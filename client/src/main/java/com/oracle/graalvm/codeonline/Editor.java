@@ -17,6 +17,7 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.js.PlatformServices;
+import com.oracle.graalvm.codeonline.js.TaskQueue;
 import com.oracle.graalvm.codeonline.json.CompilationResult;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import com.oracle.graalvm.codeonline.json.CompletionItem;
@@ -59,6 +60,7 @@ public class Editor {
     private final ArrayList<TextMarker> markers = new ArrayList<>();
     private EditorFromTextArea codeMirror;
     private Doc doc;
+    private TaskQueue.Task<String, String> currentCompileTask;
 
     static {
         EditorConfiguration conf = new Objs().$cast(EditorConfiguration.class);
@@ -124,7 +126,12 @@ public class Editor {
     }
 
     private void compile() {
-        platformServices.getWorkerQueue().enqueue(getJavaSource(), response -> {
+        String request = getJavaSource();
+        if(currentCompileTask != null && !currentCompileTask.isSent()) {
+            currentCompileTask.update(request);
+            return;
+        }
+        currentCompileTask = platformServices.getWorkerQueue().enqueue(request, response -> {
             CompilationResult cr = CompilationResultModel.parseCompilationResult(response);
             for(TextMarker marker : markers) {
                 marker.clear();
@@ -213,6 +220,7 @@ public class Editor {
     private String hintPrefix;
     private int currentHintLine, currentHintTokenStart;
     private List<CompletionItem> hintItems;
+    private TaskQueue.Task<String, String> currentCompletionTask;
 
     private boolean hintActive() {
         return hintPrefix != null;
@@ -259,7 +267,11 @@ public class Editor {
         }
         long offset = (long) doc.indexFromPos(cur0) - setHintToken(cur0.line().intValue(), cur0.ch().intValue());
         String request = "/" + offset + "/" + doc.getValue();
-        platformServices.getWorkerQueue().enqueue(request, response -> {
+        if(currentCompletionTask != null && !currentCompletionTask.isSent()) {
+            currentCompletionTask.update(request);
+            return;
+        }
+        currentCompletionTask = platformServices.getWorkerQueue().enqueue(request, response -> {
             Position cur1 = doc.getCursor();
             if(hintRelevant(cur1)) {
                 CompletionList cl = CompletionListModel.parseCompletionList(response);
