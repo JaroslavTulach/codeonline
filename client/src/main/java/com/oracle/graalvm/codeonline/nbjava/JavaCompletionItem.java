@@ -1215,10 +1215,10 @@ public abstract class JavaCompletionItem {
         private static final String STYLE_PACKAGE = "Java-hint FieldPackagePrivate"; //NOI18N
         private static final String STYLE_PRIVATE = "Java-hint FieldPrivate"; //NOI18N
         private static final String STYLE_PROTECTED = "Java-hint FieldProtected"; //NOI18N
-        private static final String STYLE_ST = "Java-hint FieldStatic"; //NOI18N
-        private static final String STYLE_ST_PACKAGE = "Java-hint FieldStaticPackagePrivate"; //NOI18N
-        private static final String STYLE_ST_PRIVATE = "Java-hint FieldStaticPrivate"; //NOI18N
-        private static final String STYLE_ST_PROTECTED = "Java-hint FieldStaticProtected"; //NOI18N
+        private static final String STYLE_ST = "Java-hint Static Field"; //NOI18N
+        private static final String STYLE_ST_PACKAGE = "Java-hint Static FieldPackagePrivate"; //NOI18N
+        private static final String STYLE_ST_PRIVATE = "Java-hint Static FieldPrivate"; //NOI18N
+        private static final String STYLE_ST_PROTECTED = "Java-hint Static FieldProtected"; //NOI18N
 
         private boolean isInherited;
         private boolean isDeprecated;
@@ -1435,10 +1435,10 @@ public abstract class JavaCompletionItem {
         private static final String STYLE_PACKAGE = "Java-hint MethodPackagePrivate"; //NOI18N
         private static final String STYLE_PRIVATE = "Java-hint MethodPrivate"; //NOI18N
         private static final String STYLE_PROTECTED = "Java-hint MethodProtected"; //NOI18N
-        private static final String STYLE_ST = "Java-hint MethodStatic"; //NOI18N
-        private static final String STYLE_ST_PACKAGE = "Java-hint MethodStaticPackagePrivate"; //NOI18N
-        private static final String STYLE_ST_PRIVATE = "Java-hint MethodStaticPrivate"; //NOI18N
-        private static final String STYLE_ST_PROTECTED = "Java-hint MethodStaticProtected"; //NOI18N
+        private static final String STYLE_ST = "Java-hint Static Method"; //NOI18N
+        private static final String STYLE_ST_PACKAGE = "Java-hint Static MethodPackagePrivate"; //NOI18N
+        private static final String STYLE_ST_PRIVATE = "Java-hint Static MethodPrivate"; //NOI18N
+        private static final String STYLE_ST_PROTECTED = "Java-hint Static MethodProtected"; //NOI18N
 
 //        private static final String PARAMETER_NAME_COLOR = getHTMLColor(224, 160, 65);
 
@@ -3652,47 +3652,7 @@ public abstract class JavaCompletionItem {
     }
 
     private static String escape(String s) {
-        if (s != null) {
-            if (checkAttributeCharacters(s)) {
-                return s;
-            }
-            StringBuilder buf = new StringBuilder();
-            for (int i = 0; i < s.length(); i++) {
-                char ch = s.charAt(i);
-                if ('<' == ch) {
-                    buf.append("&lt;");
-                    continue;
-                } else if ('&' == ch) {
-                    buf.append("&amp;");
-                    continue;
-                } else if ('\'' == ch) {
-                    buf.append("&apos;");
-                    continue;
-                } else if ('"' == ch) {
-                    buf.append("&quot;");
-                    continue;
-                }
-                buf.append(ch);
-            }
-            return buf.toString();
-        }
         return s;
-    }
-
-    private static boolean checkAttributeCharacters(String chars) {
-        for (int i = 0; i < chars.length(); i++) {
-            char ch = chars.charAt(i);
-            if (((int) ch) <= 93) { // we are UNICODE ']'
-                switch (ch) {
-                    case '\'':
-                    case '"':
-                    case '<':
-                    case '&':
-                        return false;
-                }
-            }
-        }
-        return true;
     }
 //    private static int findPositionForSemicolon(JTextComponent c) {
 //        final int[] ret = new int[] {-2};
