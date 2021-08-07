@@ -26,6 +26,8 @@ import com.oracle.graalvm.codeonline.json.CompletionListModel;
 import com.oracle.graalvm.codeonline.json.Diag;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.tools.Diagnostic;
 import net.java.html.js.JavaScriptBody;
@@ -48,6 +50,7 @@ import static net.java.html.lib.dom.Exports.document;
 import net.java.html.lib.dom.HTMLAnchorElement;
 import net.java.html.lib.dom.HTMLButtonElement;
 import net.java.html.lib.dom.HTMLTextAreaElement;
+import net.java.html.lib.dom.Text;
 
 /**
  * An instance of this class represents an editable code snippet.
@@ -56,12 +59,6 @@ import net.java.html.lib.dom.HTMLTextAreaElement;
 public class Editor {
     private static final String EDITOR_PROPERTY = "codeonline.Editor";
     private static final EditorConfiguration CODEMIRROR_CONF;
-
-    private final PlatformServices platformServices;
-    private final ArrayList<TextMarker> markers = new ArrayList<>();
-    private EditorFromTextArea codeMirror;
-    private Doc doc;
-    private TaskQueue.Task<String, String> currentCompileTask;
 
     static {
         EditorConfiguration conf = new Objs().$cast(EditorConfiguration.class);
@@ -72,6 +69,15 @@ public class Editor {
         CODEMIRROR_CONF = conf;
     }
 
+    private final PlatformServices platformServices;
+    private final ArrayList<TextMarker> markers = new ArrayList<>();
+    private String origSource;
+    private EditorFromTextArea codeMirror;
+    private Doc doc;
+    private HTMLElement errorIndicator, warningIndicator, noteIndicator, noDiagIndicator;
+    private List<Diag> diags;
+    private TaskQueue.Task<String, String> currentCompileTask;
+
     private Editor(PlatformServices platformServices) {
         this.platformServices = platformServices;
     }
@@ -81,13 +87,19 @@ public class Editor {
     }
 
     private void initialize(Element oldElement) {
+        origSource = unIndent(oldElement.textContent());
         HTMLElement newElement = document.createElement("div");
-        newElement.appendChild(createButton("Compile", this::compile));
-        newElement.appendChild(document.createTextNode(" "));
         newElement.appendChild(createButton("Save", this::save));
+        newElement.appendChild(document.createTextNode(" "));
+        newElement.appendChild(createButton("Reset", this::reset));
+        newElement.appendChild(document.createTextNode(" "));
+        errorIndicator = createIndicator(newElement, "ErrorIndicator", () -> getDiags(k -> k == Diagnostic.Kind.ERROR));
+        warningIndicator = createIndicator(newElement, "WarningIndicator", () -> getDiags(k -> k == Diagnostic.Kind.WARNING || k == Diagnostic.Kind.MANDATORY_WARNING));
+        noteIndicator = createIndicator(newElement, "NoteIndicator", () -> getDiags(k -> k == Diagnostic.Kind.NOTE || k == Diagnostic.Kind.OTHER));
+        noDiagIndicator = createIndicator(newElement, "NoDiagIndicator", () -> "No errors or warnings");
         newElement.appendChild(document.createElement("br"));
         HTMLTextAreaElement ta = newElement.appendChild(document.createElement("textarea")).$cast(HTMLTextAreaElement.class);
-        ta.value.set(unIndent(oldElement.textContent()));
+        ta.value.set(origSource);
         oldElement.parentNode().replaceChild(newElement, oldElement);
         codeMirror = net.java.html.lib.codemirror.CodeMirror.Exports.fromTextArea(ta, CODEMIRROR_CONF);
         doc = codeMirror.getDoc();
@@ -123,7 +135,7 @@ public class Editor {
             else
                 result.append(line);
             result.append('\n');
-            if(!line.isEmpty())
+            if(!line.matches("\\s*")) // .isBlank()
                 length = result.length();
         }
         return result.substring(0, length);
@@ -146,15 +158,47 @@ public class Editor {
             for(TextMarker marker : markers) {
                 marker.clear();
             }
-            for(Diag diag : cr.getDiagnostics()) {
-                reportError(diag);
+            int numErrors = 0, numWarnings = 0, numNotes = 0;
+            boolean noDiags = true;
+            for(Diag diag : diags = cr.getDiagnostics()) {
+                switch(diag.getKind()) {
+                    case ERROR:
+                        numErrors++;
+                        break;
+                    case WARNING:
+                    case MANDATORY_WARNING:
+                        numWarnings++;
+                        break;
+                    case NOTE:
+                    case OTHER:
+                        numNotes++;
+                        break;
+                }
+                noDiags = false;
                 highlightError(diag);
             }
+            reportCount(errorIndicator, numErrors);
+            reportCount(warningIndicator, numWarnings);
+            reportCount(noteIndicator, numNotes);
+            reportNoDiags(noDiags);
         });
     }
 
-    private void reportError(Diag diag) {
-        // TODO
+    private void reportCount(HTMLElement counter, int count) {
+        if(count != 0) {
+            counter.style().display.set("inline-block");
+            setText(counter, Integer.toString(count));
+        } else {
+            counter.style().display.set("none");
+        }
+    }
+
+    private void reportNoDiags(boolean noDiags) {
+        if(noDiags) {
+            noDiagIndicator.style().display.set("inline-block");
+        } else {
+            noDiagIndicator.style().display.set("none");
+        }
     }
 
     private void highlightError(Diag diag) {
@@ -191,6 +235,28 @@ public class Editor {
         markers.add(marker);
     }
 
+    private String getDiags(Predicate<Diagnostic.Kind> filter) {
+        StringBuilder result = new StringBuilder();
+        boolean addSep = false;
+        for(Diag diag : diags) {
+            if(!filter.test(diag.getKind()))
+                continue;
+            if(addSep)
+                result.append('\n');
+            else
+                addSep = true;
+            long line = diag.getLineNumber(), col = diag.getColumnNumber();
+            String msg = diag.getMessage();
+            if(line == Diagnostic.NOPOS)
+                result.append(diag.getMessage());
+            else if(col == Diagnostic.NOPOS)
+                result.append(line).append(": ").append(msg);
+            else
+                result.append(line).append(":").append(col).append(": ").append(msg);
+        }
+        return result.toString();
+    }
+
     private static Position makePosition(long line, long ch) {
         Position result = new Objs().$cast(Position.class);
         result.line.set(line);
@@ -205,6 +271,10 @@ public class Editor {
         a.click();
     }
 
+    private void reset() {
+        codeMirror.setValue(origSource);
+    }
+
     private String getJavaSource() {
         return codeMirror.getValue();
     }
@@ -216,15 +286,42 @@ public class Editor {
     private static HTMLElement createButton(String text, Runnable onClick) {
         HTMLButtonElement button = document.createElement("button").$cast(HTMLButtonElement.class);
         button.appendChild(document.createTextNode(text));
-//        button.onclick.set(ignored -> {
-//            onClick.run();
-//            return null;
-//        });
-        button.addEventListener("click", EventListener.$as((Function.A1<Object, Object>)(ignored -> {
-            onClick.run();
-            return null;
-        })));
+        button.addEventListener("click", listener(onClick));
         return button;
+    }
+
+    private static HTMLElement createIndicator(HTMLElement parent, String cssClass, Supplier<String> getDesc) {
+        HTMLElement wrapper = document.createElement("span");
+        wrapper.className.set("IndicatorWrapper");
+        HTMLElement indicator = document.createElement("span");
+        indicator.className.set("Indicator " + cssClass);
+        indicator.style().display.set("none");
+        indicator.appendChild(document.createTextNode(""));
+        wrapper.appendChild(indicator);
+        HTMLElement desc = document.createElement("span");
+        desc.className.set("IndicatorDesc");
+        desc.style().display.set("none");
+        desc.appendChild(document.createTextNode(""));
+        wrapper.appendChild(desc);
+        wrapper.tabIndex.set(0);
+        wrapper.addEventListener("click", listener(() -> {
+            setText(desc, getDesc.get());
+            desc.style().display.set("inline-block");
+        }));
+        wrapper.addEventListener("blur", listener(() -> desc.style().display.set("none")));
+        parent.appendChild(wrapper);
+        return indicator;
+    }
+
+    private static EventListener listener(Runnable runnable) {
+        return EventListener.$as((Function.A1<Object, Object>)(ignored -> {
+            runnable.run();
+            return null;
+        }));
+    }
+
+    private static void setText(Element element, String text) {
+        element.childNodes().$get(0).$cast(Text.class).data.set(text);
     }
 
     private String hintPrefix;
