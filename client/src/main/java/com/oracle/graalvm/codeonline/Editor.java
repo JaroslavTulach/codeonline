@@ -30,7 +30,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.tools.Diagnostic;
-import net.java.html.js.JavaScriptBody;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
 import net.java.html.lib.codemirror.CodeMirror.Doc;
@@ -104,15 +103,14 @@ public class Editor {
         codeMirror = net.java.html.lib.codemirror.CodeMirror.Exports.fromTextArea(ta, CODEMIRROR_CONF);
         doc = codeMirror.getDoc();
         codeMirror.$set(EDITOR_PROPERTY, this);
-        on("changes", this::compile);
-        on("cursorActivity", this::updateOrCloseHints);
-    }
-
-    @JavaScriptBody(args = {"codeMirror", "eventName", "handler"}, body = "codeMirror.on(eventName, () => handler.@java.lang.Runnable::run()());", javacall = true)
-    private static native void on(Object codeMirror, String eventName, Runnable handler);
-
-    private void on(String eventName, Runnable handler) {
-        on(Objs.$js(codeMirror), eventName, handler);
+        codeMirror.on("changes", (p1) -> {
+            compile();
+            return null;
+        });
+        codeMirror.on("cursorActivity", (p1) -> {
+            updateOrCloseHints();
+            return null;
+        });
     }
 
     private static String unIndent(String code) {
