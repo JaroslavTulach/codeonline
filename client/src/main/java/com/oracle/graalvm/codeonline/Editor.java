@@ -103,14 +103,12 @@ public class Editor {
         codeMirror = net.java.html.lib.codemirror.CodeMirror.Exports.fromTextArea(ta, CODEMIRROR_CONF);
         doc = codeMirror.getDoc();
         codeMirror.$set(EDITOR_PROPERTY, this);
-        codeMirror.on("changes", (p1) -> {
-            compile();
-            return null;
-        });
-        codeMirror.on("cursorActivity", (p1) -> {
-            updateOrCloseHints();
-            return null;
-        });
+        on("changes", this::compile);
+        on("cursorActivity", this::updateOrCloseHints);
+    }
+
+    private void on(String eventName, Runnable handler) {
+        codeMirror.on(eventName, fnFromRunnable(handler));
     }
 
     private static String unIndent(String code) {
@@ -312,10 +310,14 @@ public class Editor {
     }
 
     private static EventListener listener(Runnable runnable) {
-        return EventListener.$as((Function.A1<Object, Object>)(ignored -> {
+        return EventListener.$as(fnFromRunnable(runnable));
+    }
+
+    private static Function.A1 fnFromRunnable(Runnable runnable) {
+        return ignored -> {
             runnable.run();
             return null;
-        }));
+        };
     }
 
     private static void setText(Element element, String text) {
