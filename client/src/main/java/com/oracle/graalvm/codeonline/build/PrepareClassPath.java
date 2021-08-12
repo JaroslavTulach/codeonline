@@ -55,14 +55,25 @@ public final class PrepareClassPath {
 
     private static File getLibRtJar() {
         String javaHome = System.getProperty("java.home");
-        // use version 8 JDK, since newer JDKs do not seem to have lib/rt.jar
-        // TODO fix for newer JDKs and remove this
-        javaHome = "/usr/lib/jvm/java-8-openjdk";
-        File libRtJar = Paths.get(javaHome, "jre", "lib", "rt.jar").toFile();
-        if(libRtJar.exists())
-            return libRtJar;
-        else
-            return Paths.get(javaHome, "lib", "rt.jar").toFile();
+        File rtJar = findRtJar(javaHome);
+        if (rtJar == null) {
+            // try common Linux location
+            rtJar = findRtJar("/usr/lib/jvm/java-8-openjdk");
+        }
+        return rtJar;
+    }
+
+    private static File findRtJar(String javaHome) {
+        File libJreRtJar = Paths.get(javaHome, "jre", "lib", "rt.jar").toFile();
+        if(libJreRtJar.exists())
+            return libJreRtJar;
+        else {
+            File libRtJar = Paths.get(javaHome, "lib", "rt.jar").toFile();
+            if (libRtJar.exists()) {
+                return libRtJar;
+            }
+            return null;
+        }
     }
 
     private static void processPackages(File outDir, Location location, File inFile, Consumer<String> outputFileList) throws IOException {
