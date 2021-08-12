@@ -33,7 +33,8 @@ public final class InputStreams {
             if(size == -1)
                 return Arrays.copyOf(contents, offset);
             offset += size;
-            contents = Arrays.copyOf(contents, contents.length * 2);
+            if(offset * 2 > contents.length)
+                contents = Arrays.copyOf(contents, contents.length * 2);
         }
     }
 }

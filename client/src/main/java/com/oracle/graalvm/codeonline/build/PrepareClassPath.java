@@ -22,11 +22,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.tools.JavaFileManager.Location;
@@ -42,30 +43,18 @@ public final class PrepareClassPath {
 
     public static void main(String[] args) throws IOException {
         File outputDir = new File(args[0]);
-        File platformClassPath = getLibRtJar();
-        File[] classPath = Arrays.stream(args).skip(1).map(File::new).toArray(File[]::new);
+        File platformClassPath = new File(args[1]);
+        File[] classPath = Arrays.stream(args).skip(2).map(File::new).toArray(File[]::new);
         outputDir.mkdirs();
         try(PrintStream printStream = new PrintStream(new File(outputDir, "available.txt"))) {
-            processPackages(outputDir, StandardLocation.PLATFORM_CLASS_PATH, platformClassPath, printStream::println);
+            writePackages(outputDir, StandardLocation.PLATFORM_CLASS_PATH, readCtSym(platformClassPath), printStream::println);
             for(File classPathElem : classPath) {
-                processPackages(outputDir, StandardLocation.CLASS_PATH, classPathElem, printStream::println);
+                writePackages(outputDir, StandardLocation.CLASS_PATH, readJar(classPathElem), printStream::println);
             }
         }
     }
 
-    private static File getLibRtJar() {
-        String javaHome = System.getProperty("java.home");
-        // use version 8 JDK, since newer JDKs do not seem to have lib/rt.jar
-        // TODO fix for newer JDKs and remove this
-        javaHome = "/usr/lib/jvm/java-8-openjdk";
-        File libRtJar = Paths.get(javaHome, "jre", "lib", "rt.jar").toFile();
-        if(libRtJar.exists())
-            return libRtJar;
-        else
-            return Paths.get(javaHome, "lib", "rt.jar").toFile();
-    }
-
-    private static void processPackages(File outDir, Location location, File inFile, Consumer<String> outputFileList) throws IOException {
+    private static HashMap<String, HashMap<String, byte[]>> readJar(File inFile) throws IOException {
         HashMap<String, HashMap<String, byte[]>> packages = new HashMap<>();
         try(ZipInputStream in = new ZipInputStream(new FileInputStream(inFile))) {
             for(;;) {
@@ -94,6 +83,34 @@ public final class PrepareClassPath {
                 classes.putIfAbsent(simpleName, contents);
             }
         }
+        return packages;
+    }
+
+    private static HashMap<String, HashMap<String, byte[]>> readCtSym(File inFile) throws IOException {
+        Pattern entNamePattern = Pattern.compile("META-INF/ct[.]sym/@8@/@/(.*)/(@)[.]class".replace("@", "[^/-]*"));
+        HashMap<String, HashMap<String, byte[]>> packages = new HashMap<>();
+        try(ZipInputStream in = new ZipInputStream(new FileInputStream(inFile))) {
+            for(;;) {
+                ZipEntry entry = in.getNextEntry();
+                if(entry == null)
+                    break;
+                if(entry.isDirectory())
+                    continue;
+                String entName = entry.getName();
+                Matcher m = entNamePattern.matcher(entName);
+                if(!m.matches())
+                    continue;
+                String packageName = m.group(1);
+                String simpleName = m.group(2);
+                byte[] contents = MethodBodyEraser.eraseMethodBodies(InputStreams.readAllBytes(in));
+                HashMap<String, byte[]> classes = packages.computeIfAbsent(packageName, ignoredPackageName -> new HashMap<>());
+                classes.putIfAbsent(simpleName, contents);
+            }
+        }
+        return packages;
+    }
+
+    private static void writePackages(File outDir, Location location, HashMap<String, HashMap<String, byte[]>> packages, Consumer<String> outputFileList) throws IOException {
         for(Map.Entry<String, HashMap<String, byte[]>> packageClasses : packages.entrySet()) {
             String packageName = packageClasses.getKey().replace('/', '.');
             HashMap<String, byte[]> classes = packageClasses.getValue();

@@ -26,6 +26,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.TypePath;
 
 public final class MethodBodyEraser extends ClassVisitor {
+    private static final int FORCED_BYTECODE_VERSION = Opcodes.V1_8;
+
     private MethodBodyEraser() {
         super(Opcodes.ASM6, new ClassWriter(ClassWriter.COMPUTE_FRAMES));
     }
@@ -70,6 +72,8 @@ public final class MethodBodyEraser extends ClassVisitor {
 
             @Override
             public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                if(desc.indexOf('+') != -1)
+                    return null;
                 return mw.visitAnnotation(desc, visible);
             }
 
@@ -83,6 +87,18 @@ public final class MethodBodyEraser extends ClassVisitor {
                 mw.visitParameter(name, access);
             }
         };
+    }
+
+    @Override
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        super.visit(FORCED_BYTECODE_VERSION, access, name, signature, superName, interfaces);
+    }
+
+    @Override
+    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+        if(descriptor.indexOf('+') != -1)
+            return null;
+        return super.visitAnnotation(descriptor, visible);
     }
 
     private byte[] toByteArray() {
