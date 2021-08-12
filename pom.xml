@@ -15,9 +15,9 @@
         <module>js</module>
     </modules>
     <properties>
-        <net.java.html.version>1.7</net.java.html.version>
+        <net.java.html.version>1.7.2</net.java.html.version>
         <openjfx.version>11</openjfx.version>
-        <bck2brwsr.version>0.32</bck2brwsr.version>
+        <bck2brwsr.version>0.51</bck2brwsr.version>
         <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
         <junit.browser.version>1.0</junit.browser.version>
         <jersey.version>2.13</jersey.version>
