@@ -13,6 +13,7 @@
         <module>client</module>
         <module>client-web</module>
         <module>js</module>
+        <module>javac</module>
     </modules>
     <properties>
         <net.java.html.version>1.7.2</net.java.html.version>
@@ -23,6 +24,7 @@
         <jersey.version>2.13</jersey.version>
         <presenters.version>1.7.1</presenters.version>
         <enforcer.fail>false</enforcer.fail>
+        <netbeans.version>RELEASE81</netbeans.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencyManagement>

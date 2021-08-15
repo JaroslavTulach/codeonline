@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+  http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.graalvm.codeonline</groupId>
+        <artifactId>codeonline-pom</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+ 
+    <artifactId>compiler</artifactId>
+    <packaging>bundle</packaging>
+ 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+ 
+    <repositories>
+      <repository>
+        <id>netbeans</id>
+        <name>NetBeans</name>
+        <url>http://bits.netbeans.org/maven2/</url>
+      </repository>
+    </repositories>
+ 
+    <dependencies>
+        <dependency>
+            <groupId>org.netbeans.external</groupId>
+            <artifactId>nb-javac-api</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.external</groupId>
+            <artifactId>nb-javac-impl</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+ 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.3.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <!-- export the packages that should be externally accessible -->
+                        <Export-Package>javax.*</Export-Package>
+                        <!-- list other packages that should be included in your bundle -->
+                        <Private-Package>com.sun.*</Private-Package>
+                    </instructions>
+                    <Embed-Dependency>*;scope=provided</Embed-Dependency>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apidesign.bck2brwsr</groupId>
+                <artifactId>bck2brwsr-maven-plugin</artifactId>
+                <version>${bck2brwsr.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>library</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <obfuscation>NONE</obfuscation>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
