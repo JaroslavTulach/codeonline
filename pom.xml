@@ -12,6 +12,7 @@
     <modules>
         <module>client</module>
         <module>client-web</module>
+        <module>client-desktop</module>
         <module>js</module>
         <module>javac</module>
     </modules>

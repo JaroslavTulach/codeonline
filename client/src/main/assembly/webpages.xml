@@ -38,5 +38,10 @@
           <outputDirectory>/</outputDirectory>
           <filtered>false</filtered>
       </fileSet>
+      <fileSet>
+          <directory>target/extres</directory>
+          <outputDirectory>/extres</outputDirectory>
+          <filtered>false</filtered>
+      </fileSet>
   </fileSets>
 </assembly>

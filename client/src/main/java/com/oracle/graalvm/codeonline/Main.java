@@ -18,35 +18,14 @@ package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
-import com.oracle.graalvm.codeonline.js.TaskQueue;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import com.oracle.graalvm.codeonline.json.CompletionListModel;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import net.java.html.BrwsrCtx;
-import net.java.html.boot.BrowserBuilder;
 import net.java.html.lib.dom.Element;
 import net.java.html.lib.dom.NodeListOf;
 
-/**
- * Desktop client entry point and common client code.
- */
 public final class Main {
     private Main() {
         throw new UnsupportedOperationException();
-    }
-
-    public static void main(String... args) throws Exception {
-        BrowserBuilder.newBrowser().
-            loadPage("pages/index.html").
-            loadClass(Main.class).
-            invoke("onDesktopPageLoad", args).
-            showAndWait();
-        System.exit(0);
     }
 
     public static void onPageLoad(PlatformServices services) throws Exception {
@@ -66,10 +45,6 @@ public final class Main {
         for(Element element : elemsCopy) {
             Editor.from(element, services);
         }
-    }
-
-    public static void onDesktopPageLoad() throws Exception {
-        onPageLoad(new DesktopServices());
     }
 
     public static String executeTask(String request, PlatformServices platformServices) {
@@ -94,31 +69,5 @@ public final class Main {
         c.setFiles(files);
         boolean success = c.compile();
         return CompilationResultModel.createCompilationResult(success, c.getDiagnostics()).toString();
-    }
-
-    private static final class DesktopServices extends PlatformServices {
-        @Override
-        public InputStream openExternalResource(String name) throws IOException {
-            return new FileInputStream(Paths.get("target", "extres", name).toFile());
-        }
-
-        @Override
-        public TaskQueue<String, String> getWorkerQueue() {
-            return workerQueue;
-        }
-
-        private final TaskQueue<String, String> workerQueue = new TaskQueue<String, String>() {
-            private final Executor uiExecutor = BrwsrCtx.findDefault(Main.class);
-            private final Executor workerExecutor = Executors.newSingleThreadExecutor();
-
-            @Override
-            protected void sendTask(String request) {
-                PlatformServices platformServices = DesktopServices.this;
-                workerExecutor.execute(() -> {
-                    String response = executeTask(request, platformServices);
-                    uiExecutor.execute(() -> onResponse(response));
-                });
-            }
-        };
     }
 }

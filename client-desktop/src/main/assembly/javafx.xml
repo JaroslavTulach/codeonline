@@ -21,13 +21,4 @@
             <outputDirectory>/</outputDirectory>
         </file>
     </files>
-    <fileSets>
-        <fileSet>
-            <directory>src/main/webapp/</directory>
-            <outputDirectory>/</outputDirectory>
-            <includes>
-                <include>pages/**</include>
-            </includes>
-        </fileSet>
-    </fileSets>
 </assembly>
