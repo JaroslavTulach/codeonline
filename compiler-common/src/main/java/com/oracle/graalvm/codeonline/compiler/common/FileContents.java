@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.files;
+package com.oracle.graalvm.codeonline.compiler.common;
 
 import java.io.InputStream;
 import java.io.OutputStream;

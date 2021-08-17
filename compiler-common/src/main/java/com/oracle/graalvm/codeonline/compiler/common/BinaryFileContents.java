@@ -14,57 +14,59 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.files;
+package com.oracle.graalvm.codeonline.compiler.common;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 
 /**
- * Used by {@link JavaFileManagerImpl} to represent a read-write text file.
+ * Used by {@link JavaFileManagerImpl} to represent a read-write binary file.
  */
-final class TextFileContents extends FileContents {
-    private final StringWriter contents = new StringWriter() {
-        @Override
-        public void flush() {
-            super.flush();
-            touch();
-        }
+final class BinaryFileContents extends FileContents {
+    private byte[] contents;
 
-        @Override
-        public void close() throws IOException {
-            super.close();
-            touch();
-        }
-    };
+    BinaryFileContents(byte[] contents) {
+        this.contents = contents;
+    }
 
     @Override
     public InputStream openInputStream() {
-        throw new UnsupportedOperationException("This file does not support byte access.");
+        return new ByteArrayInputStream(contents);
     }
 
     @Override
     public OutputStream openOutputStream() {
-        throw new UnsupportedOperationException("This file does not support byte access.");
+        return new ByteArrayOutputStream() {
+            @Override
+            public void flush() throws IOException {
+                contents = toByteArray();
+                touch();
+            }
+
+            @Override
+            public void close() throws IOException {
+                flush();
+            }
+        };
     }
 
     @Override
     public Reader openReader() {
-        return new StringReader(contents.toString());
+        throw new UnsupportedOperationException("This file does not support character access.");
     }
 
     @Override
     public CharSequence getCharContent() {
-        return contents.toString();
+        throw new UnsupportedOperationException("This file does not support character access.");
     }
 
     @Override
     public Writer openWriter() {
-        contents.getBuffer().setLength(0);
-        return contents;
+        throw new UnsupportedOperationException("This file does not support character access.");
     }
 }

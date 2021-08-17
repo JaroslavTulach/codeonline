@@ -150,6 +150,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.graalvm.codeonline</groupId>
+            <artifactId>codeonline-compiler-nbjavac</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apidesign.bck2brwsr</groupId>
             <artifactId>emul</artifactId>
             <version>${bck2brwsr.version}</version>

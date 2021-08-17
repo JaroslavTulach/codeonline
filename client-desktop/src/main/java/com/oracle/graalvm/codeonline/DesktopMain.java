@@ -17,7 +17,8 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.editor.TaskQueue;
-import com.oracle.graalvm.codeonline.js.PlatformServices;
+import com.oracle.graalvm.codeonline.compiler.common.PlatformServices;
+import com.oracle.graalvm.codeonline.compiler.nbjavac.NBJavacMain;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Executor;
@@ -51,7 +52,7 @@ public final class DesktopMain {
             @Override
             protected void sendTask(String request) {
                 workerExecutor.execute(() -> {
-                    String response = Main.executeTask(request, platformServices);
+                    String response = NBJavacMain.executeTask(request, platformServices);
                     uiExecutor.execute(() -> onResponse(response));
                 });
             }

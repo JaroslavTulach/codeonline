@@ -17,7 +17,8 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.editor.TaskQueue;
-import com.oracle.graalvm.codeonline.js.PlatformServices;
+import com.oracle.graalvm.codeonline.compiler.common.PlatformServices;
+import com.oracle.graalvm.codeonline.compiler.nbjavac.NBJavacMain;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -47,7 +48,7 @@ public class BrowserMain {
             };
             Main.onPageLoad(workerQueue);
         } else {
-            WebWorkerServices.workerMain(request -> Main.executeTask(request, new WebWorkerServices()));
+            WebWorkerServices.workerMain(request -> NBJavacMain.executeTask(request, new WebWorkerServices()));
         }
     }
 

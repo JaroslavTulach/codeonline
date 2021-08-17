@@ -14,59 +14,46 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.files;
+package com.oracle.graalvm.codeonline.compiler.common;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 
 /**
- * Used by {@link JavaFileManagerImpl} to represent a read-write binary file.
+ * Used by {@link JavaFileManagerImpl} to represent a read-only text file.
  */
-final class BinaryFileContents extends FileContents {
-    private byte[] contents;
+final class StringFileContents extends FileContents {
+    private final String contents;
 
-    BinaryFileContents(byte[] contents) {
+    public StringFileContents(String contents) {
         this.contents = contents;
     }
 
     @Override
     public InputStream openInputStream() {
-        return new ByteArrayInputStream(contents);
+        throw new UnsupportedOperationException("This file does not support byte access.");
     }
 
     @Override
     public OutputStream openOutputStream() {
-        return new ByteArrayOutputStream() {
-            @Override
-            public void flush() throws IOException {
-                contents = toByteArray();
-                touch();
-            }
-
-            @Override
-            public void close() throws IOException {
-                flush();
-            }
-        };
+        throw new UnsupportedOperationException("This file does not support byte access.");
     }
 
     @Override
     public Reader openReader() {
-        throw new UnsupportedOperationException("This file does not support character access.");
+        return new StringReader(contents);
     }
 
     @Override
     public CharSequence getCharContent() {
-        throw new UnsupportedOperationException("This file does not support character access.");
+        return contents;
     }
 
     @Override
     public Writer openWriter() {
-        throw new UnsupportedOperationException("This file does not support character access.");
+        throw new IllegalStateException("This file is not writable.");
     }
 }

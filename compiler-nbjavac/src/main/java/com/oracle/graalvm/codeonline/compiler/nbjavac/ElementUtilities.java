@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.oracle.graalvm.codeonline.nbjava;
+package com.oracle.graalvm.codeonline.compiler.nbjavac;
 
 import com.sun.javadoc.Doc;
 import com.sun.source.tree.CompilationUnitTree;

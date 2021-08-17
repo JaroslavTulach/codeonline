@@ -40,7 +40,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package com.oracle.graalvm.codeonline.nbjava;
+package com.oracle.graalvm.codeonline.compiler.nbjavac;
 
 import java.io.IOException;
 import java.util.ArrayList;

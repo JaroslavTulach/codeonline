@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.files;
+package com.oracle.graalvm.codeonline.compiler.common;
 
-import com.oracle.graalvm.codeonline.js.PlatformServices;
 import com.oracle.graalvm.codeonline.ntar.NtarReader;
 import java.io.IOException;
 import java.io.InputStream;

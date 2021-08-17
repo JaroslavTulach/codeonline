@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package com.oracle.graalvm.codeonline.nbjava;
+package com.oracle.graalvm.codeonline.compiler.nbjavac;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
@@ -59,8 +59,8 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
-import com.oracle.graalvm.codeonline.nbjava.CompilationInfo.Pair;
-import com.oracle.graalvm.codeonline.nbjava.CompilationInfo.Phase;
+import com.oracle.graalvm.codeonline.compiler.nbjavac.CompilationInfo.Pair;
+import com.oracle.graalvm.codeonline.compiler.nbjavac.CompilationInfo.Phase;
 
 /**
  *

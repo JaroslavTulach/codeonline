@@ -14,23 +14,33 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.files;
+package com.oracle.graalvm.codeonline.compiler.common;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 
 /**
- * Used by {@link JavaFileManagerImpl} to represent a read-only text file.
+ * Used by {@link JavaFileManagerImpl} to represent a read-write text file.
  */
-final class StringFileContents extends FileContents {
-    private final String contents;
+final class TextFileContents extends FileContents {
+    private final StringWriter contents = new StringWriter() {
+        @Override
+        public void flush() {
+            super.flush();
+            touch();
+        }
 
-    public StringFileContents(String contents) {
-        this.contents = contents;
-    }
+        @Override
+        public void close() throws IOException {
+            super.close();
+            touch();
+        }
+    };
 
     @Override
     public InputStream openInputStream() {
@@ -44,16 +54,17 @@ final class StringFileContents extends FileContents {
 
     @Override
     public Reader openReader() {
-        return new StringReader(contents);
+        return new StringReader(contents.toString());
     }
 
     @Override
     public CharSequence getCharContent() {
-        return contents;
+        return contents.toString();
     }
 
     @Override
     public Writer openWriter() {
-        throw new IllegalStateException("This file is not writable.");
+        contents.getBuffer().setLength(0);
+        return contents;
     }
 }

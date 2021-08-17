@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline;
+package com.oracle.graalvm.codeonline.compiler.nbjavac;
 
-import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
-import com.oracle.graalvm.codeonline.nbjava.CompilationInfo;
-import com.oracle.graalvm.codeonline.nbjava.JavaCompletionItem;
-import com.oracle.graalvm.codeonline.nbjava.JavaCompletionQuery;
+import com.oracle.graalvm.codeonline.compiler.common.JavaFileManagerImpl;
 import com.sun.tools.javac.api.JavacTool;
 import java.util.ArrayList;
 import java.util.Arrays;
