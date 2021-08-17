@@ -18,6 +18,7 @@ package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
+import com.oracle.graalvm.codeonline.js.TaskQueue;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import com.oracle.graalvm.codeonline.json.CompletionListModel;
 import net.java.html.lib.dom.Element;
@@ -28,9 +29,8 @@ public final class Main {
         throw new UnsupportedOperationException();
     }
 
-    public static void onPageLoad(PlatformServices services) throws Exception {
-        services.registerCodeMirrorModule();
-        net.java.html.lib.codemirror.CodeMirror.Exports.registerHelper("hint", "clike", JavaHintHelper.create());
+    public static void onPageLoad(TaskQueue<String, String> queue) throws Exception {
+        EditorParams params = new EditorParams(queue);
 
         NodeListOf<?> elems = net.java.html.lib.dom.Exports.document.getElementsByClassName("codeonline");
 
@@ -43,7 +43,7 @@ public final class Main {
 
         // Replace each element with an interactive editor.
         for(Element element : elemsCopy) {
-            Editor.from(element, services);
+            Editor.from(element, params);
         }
     }
 

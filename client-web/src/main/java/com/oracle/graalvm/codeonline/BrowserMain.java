@@ -34,43 +34,31 @@ public class BrowserMain {
     }
 
     public static void main(String... args) throws Exception {
-        if(isMainThread())
-            Main.onPageLoad(new HTML5Services());
-        else
+        if(isMainThread()) {
+            TaskQueue<String, String> workerQueue = new TaskQueue<String, String>() {
+                {
+                    registerWorkerCallback(this::onResponse);
+                }
+
+                @Override
+                protected void sendTask(String request) {
+                    BrowserMain.sendTask(request);
+                }
+            };
+            Main.onPageLoad(workerQueue);
+        } else {
             WebWorkerServices.workerMain(request -> Main.executeTask(request, new WebWorkerServices()));
+        }
     }
 
     @JavaScriptBody(args = {}, body = "return 'window' in self;")
     private static native boolean isMainThread();
 
-    private static final class HTML5Services extends PlatformServices {
-        @Override
-        public InputStream openExternalResource(String name) throws IOException {
-            throw new UnsupportedOperationException();
-        }
+    @JavaScriptBody(args = {"c"}, body = "window.codeonlineWorker.onmessage = function(event) { c.@java.util.function.Consumer::accept(Ljava/lang/Object;)(event.data); };", javacall = true)
+    static native void registerWorkerCallback(Consumer<String> c);
 
-        @JavaScriptBody(args = {"c"}, body = "window.codeonlineWorker.onmessage = function(event) { c.@java.util.function.Consumer::accept(Ljava/lang/Object;)(event.data); };", javacall = true)
-        static native void registerWorkerCallback(Consumer<String> c);
-
-        @JavaScriptBody(args = {"request"}, body = "window.codeonlineWorker.postMessage(request);")
-        static native void sendTask(String request);
-
-        @Override
-        public TaskQueue<String, String> getWorkerQueue() {
-            return workerQueue;
-        }
-
-        private final TaskQueue<String, String> workerQueue = isMainThread() ? new TaskQueue<String, String>() {
-            {
-                registerWorkerCallback(this::onResponse);
-            }
-
-            @Override
-            protected void sendTask(String request) {
-                HTML5Services.sendTask(request);
-            }
-        } : null;
-    }
+    @JavaScriptBody(args = {"request"}, body = "window.codeonlineWorker.postMessage(request);")
+    static native void sendTask(String request);
 
     private static final class WebWorkerServices extends PlatformServices {
         @Override
@@ -82,10 +70,5 @@ public class BrowserMain {
 
         @JavaScriptBody(args = {"f"}, body = "self.onmessage = function(event) { self.postMessage(f.@java.util.function.Function::apply(Ljava/lang/Object;)(event.data)); };", javacall = true)
         static native boolean workerMain(Function<String, String> f);
-
-        @Override
-        public TaskQueue<String, String> getWorkerQueue() {
-            throw new UnsupportedOperationException();
-        }
     }
 }

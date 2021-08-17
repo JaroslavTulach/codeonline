@@ -16,7 +16,6 @@
 
 package com.oracle.graalvm.codeonline;
 
-import com.oracle.graalvm.codeonline.js.PlatformServices;
 import com.oracle.graalvm.codeonline.js.TaskQueue;
 import com.oracle.graalvm.codeonline.json.CompilationResult;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
@@ -60,6 +59,8 @@ public class Editor {
     private static final EditorConfiguration CODEMIRROR_CONF;
 
     static {
+        CodeMirrorModuleProvider.register();
+        net.java.html.lib.codemirror.CodeMirror.Exports.registerHelper("hint", "clike", JavaHintHelper.create());
         EditorConfiguration conf = new Objs().$cast(EditorConfiguration.class);
         conf.lineNumbers.set(true);
         conf.mode.set("text/x-java");
@@ -68,7 +69,7 @@ public class Editor {
         CODEMIRROR_CONF = conf;
     }
 
-    private final PlatformServices platformServices;
+    private final EditorParams params;
     private final ArrayList<TextMarker> markers = new ArrayList<>();
     private String origSource;
     private EditorFromTextArea codeMirror;
@@ -77,8 +78,8 @@ public class Editor {
     private List<Diag> diags;
     private TaskQueue.Task<String, String> currentCompileTask;
 
-    private Editor(PlatformServices platformServices) {
-        this.platformServices = platformServices;
+    private Editor(EditorParams params) {
+        this.params = params;
     }
 
     public static Editor getInstance(EditorFromTextArea codeMirror) {
@@ -137,8 +138,8 @@ public class Editor {
         return result.substring(0, length);
     }
 
-    public static Editor from(Element element, PlatformServices platformServices) {
-        Editor instance = new Editor(platformServices);
+    public static Editor from(Element element, EditorParams params) {
+        Editor instance = new Editor(params);
         instance.initialize(element);
         return instance;
     }
@@ -149,7 +150,7 @@ public class Editor {
             currentCompileTask.update(request);
             return;
         }
-        currentCompileTask = platformServices.getWorkerQueue().enqueue(request, response -> {
+        currentCompileTask = params.compilationQueue.enqueue(request, response -> {
             CompilationResult cr = CompilationResultModel.parseCompilationResult(response);
             for(TextMarker marker : markers) {
                 marker.clear();
@@ -378,7 +379,7 @@ public class Editor {
             currentCompletionTask.update(request);
             return;
         }
-        currentCompletionTask = platformServices.getWorkerQueue().enqueue(request, response -> {
+        currentCompletionTask = params.completionQueue.enqueue(request, response -> {
             Position cur1 = doc.getCursor();
             if(hintRelevant(cur1)) {
                 CompletionList cl = CompletionListModel.parseCompletionList(response);

@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.js;
+package com.oracle.graalvm.codeonline;
 
-import java.io.IOException;
-import java.io.InputStream;
+import net.java.html.lib.Modules;
+import net.java.html.lib.Objs;
 
-public abstract class PlatformServices {
-    public abstract InputStream openExternalResource(String name) throws IOException;
+public class CodeMirrorModuleProvider extends Modules.Provider {
+    private CodeMirrorModuleProvider() {}
+
+    @Override
+    protected Objs find(String string) {
+        if(string.equals("CodeMirror"))
+            return net.java.html.lib.codemirror.Exports.$as(net.java.html.lib.Exports.eval("CodeMirror"));
+        return null;
+    }
+
+    public static void register() {
+        new CodeMirrorModuleProvider();
+    }
 }

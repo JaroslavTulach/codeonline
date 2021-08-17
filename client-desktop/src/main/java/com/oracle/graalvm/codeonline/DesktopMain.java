@@ -43,7 +43,20 @@ public final class DesktopMain {
     }
 
     public static void onDesktopPageLoad() throws Exception {
-        Main.onPageLoad(new DesktopServices());
+        PlatformServices platformServices = new DesktopServices();
+        TaskQueue<String, String> workerQueue = new TaskQueue<String, String>() {
+            private final Executor uiExecutor = BrwsrCtx.findDefault(Main.class);
+            private final Executor workerExecutor = Executors.newSingleThreadExecutor();
+
+            @Override
+            protected void sendTask(String request) {
+                workerExecutor.execute(() -> {
+                    String response = Main.executeTask(request, platformServices);
+                    uiExecutor.execute(() -> onResponse(response));
+                });
+            }
+        };
+        Main.onPageLoad(workerQueue);
     }
 
     private static final class DesktopServices extends PlatformServices {
@@ -51,24 +64,5 @@ public final class DesktopMain {
         public InputStream openExternalResource(String name) throws IOException {
             return getClass().getResourceAsStream("/pages/extres/" + name);
         }
-
-        @Override
-        public TaskQueue<String, String> getWorkerQueue() {
-            return workerQueue;
-        }
-
-        private final TaskQueue<String, String> workerQueue = new TaskQueue<String, String>() {
-            private final Executor uiExecutor = BrwsrCtx.findDefault(DesktopMain.class);
-            private final Executor workerExecutor = Executors.newSingleThreadExecutor();
-
-            @Override
-            protected void sendTask(String request) {
-                PlatformServices platformServices = DesktopServices.this;
-                workerExecutor.execute(() -> {
-                    String response = Main.executeTask(request, platformServices);
-                    uiExecutor.execute(() -> onResponse(response));
-                });
-            }
-        };
     }
 }

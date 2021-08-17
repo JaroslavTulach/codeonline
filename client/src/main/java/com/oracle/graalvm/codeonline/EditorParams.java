@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.js;
+package com.oracle.graalvm.codeonline;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.oracle.graalvm.codeonline.js.TaskQueue;
 
-public abstract class PlatformServices {
-    public abstract InputStream openExternalResource(String name) throws IOException;
+public class EditorParams {
+    public final TaskQueue<String, String> compilationQueue;
+    public final TaskQueue<String, String> completionQueue;
+
+    public EditorParams(TaskQueue compilationQueue, TaskQueue completionQueue) {
+        this.compilationQueue = compilationQueue;
+        this.completionQueue = completionQueue;
+    }
+
+    public EditorParams(TaskQueue universalQueue) {
+        this.compilationQueue = universalQueue;
+        this.completionQueue = universalQueue;
+    }
 }
