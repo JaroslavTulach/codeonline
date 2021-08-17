@@ -16,8 +16,8 @@
 
 package com.oracle.graalvm.codeonline;
 
+import com.oracle.graalvm.codeonline.editor.TaskQueue;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
-import com.oracle.graalvm.codeonline.js.TaskQueue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;

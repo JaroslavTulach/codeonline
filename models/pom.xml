@@ -10,11 +10,11 @@
   </parent>
 
   <groupId>org.graalvm.codeonline</groupId>
-  <artifactId>codeonline</artifactId>
+  <artifactId>codeonline-models</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
-  <name>codeonline General Client Code</name>
+  <name>codeonline Data Models</name>
 
   <properties>
     <netbeans.compile.on.save>all</netbeans.compile.on.save>
@@ -58,42 +58,6 @@
               </configuration>
           </plugin>
           <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>exec-maven-plugin</artifactId>
-              <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <id>prepare-class-path</id>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>com.oracle.graalvm.codeonline.build.PrepareClassPath</mainClass>
-                            <classpathScope>compile</classpathScope>
-                            <arguments combine.self="override">
-                                <argument>${project.build.directory}/extres/</argument>
-                                <argument>${org.frgaal:compiler:jar}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                   <executable>${exec.java.bin}</executable>
-                   <classpathScope>runtime</classpathScope>
-                   <arguments>
-                       <argument>-classpath</argument>
-                       <classpath/>
-                       <argument>${springloaded.javaagent}</argument>
-                       <argument>-Xverify:none</argument>
-                       <argument>-Dbrowser.rootdir=${basedir}/src/main/webapp/</argument>
-                       <argument>-Dnetbeans.inspect.port=${netbeans.inspect.port}</argument>
-                       <argument>${exec.debug.arg}</argument>
-                       <argument>${project.mainclass}</argument>
-                   </arguments>
-                </configuration>
-          </plugin>
-          <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-dependency-plugin</artifactId>
               <version>2.10</version>
@@ -124,24 +88,6 @@
                       <goals>
                           <goal>properties</goal>
                       </goals>
-                  </execution>
-              </executions>
-          </plugin>
-          <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-              <version>2.4</version>
-              <executions>
-                  <execution>
-                      <id>web-pages</id>
-                      <phase>package</phase>
-                      <goals>
-                          <goal>single</goal>
-                      </goals>
-                      <configuration>
-                          <descriptors>
-                              <descriptor>src/main/assembly/webpages.xml</descriptor>
-                          </descriptors>
-                      </configuration>
                   </execution>
               </executions>
           </plugin>
@@ -184,16 +130,6 @@
     <dependency>
         <groupId>org.graalvm.codeonline</groupId>
         <artifactId>codeonline-js</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.graalvm.codeonline</groupId>
-        <artifactId>codeonline-models</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.graalvm.codeonline</groupId>
-        <artifactId>codeonline-editor</artifactId>
         <version>${project.version}</version>
     </dependency>
     <dependency>

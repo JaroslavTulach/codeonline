@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline;
+package com.oracle.graalvm.codeonline.editor;
 
-import com.oracle.graalvm.codeonline.js.TaskQueue;
 import com.oracle.graalvm.codeonline.json.CompilationResult;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import com.oracle.graalvm.codeonline.json.CompletionItem;

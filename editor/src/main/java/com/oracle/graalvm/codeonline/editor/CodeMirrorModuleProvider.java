@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline;
+package com.oracle.graalvm.codeonline.editor;
 
 import net.java.html.lib.Modules;
 import net.java.html.lib.Objs;

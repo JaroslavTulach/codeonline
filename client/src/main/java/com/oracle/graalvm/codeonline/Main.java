@@ -16,11 +16,14 @@
 
 package com.oracle.graalvm.codeonline;
 
+import com.oracle.graalvm.codeonline.editor.TaskQueue;
+import com.oracle.graalvm.codeonline.editor.Editor;
+import com.oracle.graalvm.codeonline.editor.EditorParams;
 import com.oracle.graalvm.codeonline.files.JavaFileManagerImpl;
 import com.oracle.graalvm.codeonline.js.PlatformServices;
-import com.oracle.graalvm.codeonline.js.TaskQueue;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import com.oracle.graalvm.codeonline.json.CompletionListModel;
+import com.oracle.graalvm.codeonline.nbjava.JavaCompletionItem;
 import net.java.html.lib.dom.Element;
 import net.java.html.lib.dom.NodeListOf;
 
@@ -59,7 +62,7 @@ public final class Main {
                     .build();
             c.setFiles(files);
             boolean success = c.completion(pos);
-            return CompletionListModel.createCompletionList(success, c.getCompletions()).toString();
+            return CompletionListModel.createCompletionList(success, c.getCompletions(), JavaCompletionItem::toCompletionItem).toString();
         }
         String source = request;
         Compilation c = new Compilation();

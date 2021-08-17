@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline;
-
-import com.oracle.graalvm.codeonline.js.TaskQueue;
+package com.oracle.graalvm.codeonline.editor;
 
 public class EditorParams {
     public final TaskQueue<String, String> compilationQueue;

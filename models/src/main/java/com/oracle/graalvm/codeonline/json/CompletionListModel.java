@@ -16,10 +16,10 @@
 
 package com.oracle.graalvm.codeonline.json;
 
-import com.oracle.graalvm.codeonline.nbjava.JavaCompletionItem;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 import net.java.html.BrwsrCtx;
 import net.java.html.json.Model;
 import net.java.html.json.Models;
@@ -30,8 +30,8 @@ import net.java.html.json.Property;
     @Property(name = "items", type = CompletionItem.class, array = true),
 })
 public class CompletionListModel {
-    public static CompletionList createCompletionList(boolean success, List<? extends JavaCompletionItem> completions) {
-        return new CompletionList(success, completions.stream().map(JavaCompletionItem::toCompletionItem).toArray(CompletionItem[]::new));
+    public static <T> CompletionList createCompletionList(boolean success, List<? extends T> completions, Function<? super T, ? extends CompletionItem> mapper) {
+        return new CompletionList(success, completions.stream().map(mapper).toArray(CompletionItem[]::new));
     }
 
     public static CompletionList parseCompletionList(String json) {

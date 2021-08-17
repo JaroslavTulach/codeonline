@@ -410,7 +410,7 @@
                                         <buildArg>-H:-ClosureCompiler</buildArg>
                                         <buildArg>-H:IncludeResourceBundles=com.sun.tools.javac.resources.compiler,com.sun.tools.javac.resources.javac</buildArg>
                                         <buildArg>-H:CompilerConfig=CONFIG_JUNIT_BROWSER</buildArg>
-                                        <buildArg>--initialize-at-run-time=net.java.html.lib,com.oracle.graalvm.codeonline.Editor</buildArg>
+                                        <buildArg>--initialize-at-run-time=net.java.html.lib,com.oracle.graalvm.codeonline.editor.Editor</buildArg>
                                     </buildArgs>
                                 </configuration>
                             </execution>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.js;
+package com.oracle.graalvm.codeonline.editor;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
