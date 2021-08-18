@@ -177,4 +177,28 @@
     </dependency>
     ... End of Bck2Brwsr VM presenter for BrowserRunner -->
   </dependencies>
+  <profiles>
+      <profile>
+          <id>explicit-js-engine</id>
+          <activation>
+              <jdk>[11,)</jdk>
+          </activation>
+          <build>
+              <plugins>
+                <plugin>
+                    <groupId>com.dukescript.libraries</groupId>
+                    <artifactId>typings-maven-plugin</artifactId>
+                    <version>0.5</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.openjdk.nashorn</groupId>
+                            <artifactId>nashorn-core</artifactId>
+                            <version>15.3</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+              </plugins>
+          </build>
+      </profile>
+  </profiles>
 </project>
