@@ -15,10 +15,11 @@ codeonline$ mvn -f client-desktop -Pdesktop exec:exec
 ```
 
 The `exec:exec` command launches the project in JavaFX WebView emulator mode
-suitable for debugging Java code in the selected JDK. Use:
+suitable for debugging Java code in the selected JDK. Use...
 
 ```bash
 codeonline$ mvn -f client-desktop/ -Pdesktop exec:exec \
   -Dexec.debug.arg=-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=y
 ```
 
+...and connect your IDE to the `5005` port to track behavior of codeonline.
