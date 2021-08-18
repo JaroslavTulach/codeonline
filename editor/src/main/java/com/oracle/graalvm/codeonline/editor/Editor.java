@@ -16,6 +16,7 @@
 
 package com.oracle.graalvm.codeonline.editor;
 
+import com.oracle.graalvm.codeonline.json.CompilationRequest;
 import com.oracle.graalvm.codeonline.json.CompilationResult;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import com.oracle.graalvm.codeonline.json.CompletionItem;
@@ -144,7 +145,7 @@ public class Editor {
     }
 
     private void compile() {
-        String request = getJavaSource();
+        String request = new CompilationRequest(getJavaSource(), getClassName(), -1).toString();
         if(currentCompileTask != null && !currentCompileTask.isSent()) {
             currentCompileTask.update(request);
             return;
@@ -372,8 +373,8 @@ public class Editor {
             cb.apply(null, makeHints());
             return;
         }
-        long offset = (long) doc.indexFromPos(cur0) - setHintToken(cur0.line().intValue(), cur0.ch().intValue());
-        String request = "/" + offset + "/" + doc.getValue();
+        int offset = (int) doc.indexFromPos(cur0) - setHintToken(cur0.line().intValue(), cur0.ch().intValue());
+        String request = new CompilationRequest(getJavaSource(), getClassName(), offset).toString();
         if(currentCompletionTask != null && !currentCompletionTask.isSent()) {
             currentCompletionTask.update(request);
             return;

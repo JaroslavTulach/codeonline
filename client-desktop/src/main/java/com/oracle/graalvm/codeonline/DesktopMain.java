@@ -18,7 +18,7 @@ package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.editor.TaskQueue;
 import com.oracle.graalvm.codeonline.compiler.common.PlatformServices;
-import com.oracle.graalvm.codeonline.compiler.nbjavac.NBJavacMain;
+import com.oracle.graalvm.codeonline.compiler.nbjavac.NBJavac;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Executor;
@@ -45,6 +45,7 @@ public final class DesktopMain {
 
     public static void onDesktopPageLoad() throws Exception {
         PlatformServices platformServices = new DesktopServices();
+        NBJavac compiler = new NBJavac();
         TaskQueue<String, String> workerQueue = new TaskQueue<String, String>() {
             private final Executor uiExecutor = BrwsrCtx.findDefault(Main.class);
             private final Executor workerExecutor = Executors.newSingleThreadExecutor();
@@ -52,7 +53,7 @@ public final class DesktopMain {
             @Override
             protected void sendTask(String request) {
                 workerExecutor.execute(() -> {
-                    String response = NBJavacMain.executeTask(request, platformServices);
+                    String response = compiler.handleRequest(platformServices, request);
                     uiExecutor.execute(() -> onResponse(response));
                 });
             }
@@ -60,7 +61,7 @@ public final class DesktopMain {
         Main.onPageLoad(workerQueue);
     }
 
-    private static final class DesktopServices extends PlatformServices {
+    private static final class DesktopServices implements PlatformServices {
         @Override
         public InputStream openExternalResource(String name) throws IOException {
             return getClass().getResourceAsStream("/pages/extres/" + name);

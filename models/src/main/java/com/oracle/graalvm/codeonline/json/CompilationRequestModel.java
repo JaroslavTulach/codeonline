@@ -18,26 +18,20 @@ package com.oracle.graalvm.codeonline.json;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.List;
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
 import net.java.html.BrwsrCtx;
 import net.java.html.json.Model;
 import net.java.html.json.Models;
 import net.java.html.json.Property;
 
-@Model(className = "CompilationResult", properties = {
-    @Property(name = "success", type = boolean.class),
-    @Property(name = "diagnostics", type = Diag.class, array = true)
+@Model(className = "CompilationRequest", properties = {
+    @Property(name = "source", type = String.class),
+    @Property(name = "name", type = String.class),
+    @Property(name = "completionOffset", type = int.class)
 })
-public class CompilationResultModel {
-    public static CompilationResult createCompilationResult(boolean success, List<Diagnostic<? extends JavaFileObject>> diagnostics) {
-        return new CompilationResult(success, diagnostics.stream().map(DiagModel::createDiag).toArray(Diag[]::new));
-    }
-
-    public static CompilationResult parseCompilationResult(String json) {
+public class CompilationRequestModel {
+    public static CompilationRequest parseCompilationRequest(String json) {
         try {
-            return Models.parse(BrwsrCtx.findDefault(CompilationResult.class), CompilationResult.class, new ByteArrayInputStream(json.getBytes()));
+            return Models.parse(BrwsrCtx.findDefault(CompilationRequest.class), CompilationRequest.class, new ByteArrayInputStream(json.getBytes()));
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

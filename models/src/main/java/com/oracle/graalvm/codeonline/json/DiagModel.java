@@ -19,6 +19,7 @@ package com.oracle.graalvm.codeonline.json;
 import java.util.Locale;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileObject;
 import net.java.html.json.Model;
 import net.java.html.json.Property;
 
@@ -33,7 +34,7 @@ import net.java.html.json.Property;
     @Property(name = "message", type = String.class)
 })
 public final class DiagModel {
-    public static Diag createDiag(Diagnostic<?> diag) {
+    public static Diag createDiag(Diagnostic<? extends JavaFileObject> diag) {
         return new Diag(
                 diag.getKind(),
                 diag.getPosition(),

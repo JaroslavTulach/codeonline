@@ -17,13 +17,8 @@
 package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.editor.TaskQueue;
-import com.oracle.graalvm.codeonline.compiler.common.PlatformServices;
-import com.oracle.graalvm.codeonline.compiler.nbjavac.NBJavacMain;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import com.oracle.graalvm.codeonline.compiler.nbjavac.NBJavac;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import net.java.html.js.JavaScriptBody;
 
 /**
@@ -48,7 +43,7 @@ public class BrowserMain {
             };
             Main.onPageLoad(workerQueue);
         } else {
-            WebWorkerServices.workerMain(request -> NBJavacMain.executeTask(request, new WebWorkerServices()));
+            NBJavac.main(args);
         }
     }
 
@@ -60,16 +55,4 @@ public class BrowserMain {
 
     @JavaScriptBody(args = {"request"}, body = "window.codeonlineWorker.postMessage(request);")
     static native void sendTask(String request);
-
-    private static final class WebWorkerServices extends PlatformServices {
-        @Override
-        public InputStream openExternalResource(String name) throws IOException {
-            // Relative URL, but has to specify protocol so that the correct handler is used.
-            // TODO detect HTTPS
-            return new URL("http:extres/" + name).openStream();
-        }
-
-        @JavaScriptBody(args = {"f"}, body = "self.onmessage = function(event) { self.postMessage(f.@java.util.function.Function::apply(Ljava/lang/Object;)(event.data)); };", javacall = true)
-        static native boolean workerMain(Function<String, String> f);
-    }
 }

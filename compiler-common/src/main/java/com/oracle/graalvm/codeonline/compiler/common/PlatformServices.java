@@ -19,6 +19,6 @@ package com.oracle.graalvm.codeonline.compiler.common;
 import java.io.IOException;
 import java.io.InputStream;
 
-public abstract class PlatformServices {
+public interface PlatformServices {
     public abstract InputStream openExternalResource(String name) throws IOException;
 }
