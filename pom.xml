@@ -19,6 +19,7 @@
         <module>editor</module>
         <module>compiler-common</module>
         <module>compiler-nbjavac</module>
+        <module>build</module>
     </modules>
     <properties>
         <net.java.html.version>1.7.2</net.java.html.version>
