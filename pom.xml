@@ -70,9 +70,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.frgaal</groupId>
+                        <artifactId>compiler-maven-plugin</artifactId>
+                        <version>16.0.0</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <compilerId>frgaal</compilerId>
+                    <source>16</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
             <plugin>
