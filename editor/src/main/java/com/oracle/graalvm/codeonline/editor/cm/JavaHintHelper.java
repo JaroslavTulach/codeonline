@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.editor;
+package com.oracle.graalvm.codeonline.editor.cm;
 
+import com.oracle.graalvm.codeonline.editor.Editor;
+import com.oracle.graalvm.codeonline.editor.cm.CodeMirror.EditorFromTextArea;
+import com.oracle.graalvm.codeonline.editor.cm.ShowHint.ShowHintOptions;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
-import net.java.html.lib.codemirror.CodeMirror.EditorFromTextArea;
-import net.java.html.lib.codemirror.showhint.CodeMirror.ShowHintOptions;
 
 /**
  * Implements a CodeMirror hint helper using javac.

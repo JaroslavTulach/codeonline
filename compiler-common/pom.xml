@@ -24,6 +24,15 @@
             <artifactId>codeonline-models</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.dukescript.libraries</groupId>
+            <artifactId>net.java.html.lib</artifactId>
+            <version>0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.dukescript.libraries</groupId>
+            <artifactId>net.java.html.lib.dom</artifactId>
+            <version>0.5</version>
+        </dependency>
     </dependencies>
 </project>
-

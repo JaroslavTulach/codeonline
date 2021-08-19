@@ -119,11 +119,6 @@
         <scope>runtime</scope>
     </dependency>
     <dependency>
-        <groupId>org.graalvm.codeonline</groupId>
-        <artifactId>codeonline-js</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <dependency>
         <groupId>org.netbeans.html</groupId>
         <artifactId>net.java.html.boot.fx</artifactId>
         <version>${net.java.html.version}</version>

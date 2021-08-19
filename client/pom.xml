@@ -174,11 +174,6 @@
     </dependency>
     <dependency>
         <groupId>org.graalvm.codeonline</groupId>
-        <artifactId>codeonline-js</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.graalvm.codeonline</groupId>
         <artifactId>codeonline-models</artifactId>
         <version>${project.version}</version>
     </dependency>

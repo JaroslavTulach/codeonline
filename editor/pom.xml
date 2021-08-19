@@ -82,6 +82,26 @@
                   </execution>
               </executions>
           </plugin>
+        <plugin>
+            <groupId>com.dukescript.libraries</groupId>
+            <artifactId>typings-maven-plugin</artifactId>
+            <version>0.5</version>
+            <executions>
+                <execution>
+                    <id>cm-typings</id>
+                    <goals>
+                        <goal>generate</goal>
+                    </goals>
+                    <configuration>
+                        <typings>${basedir}/src/main/ts/cm.d.ts</typings>
+                        <package>com.oracle.graalvm.codeonline.editor.cm</package>
+                        <imports>
+                            <import>net.java.html.lib.dom</import>
+                        </imports>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
       </plugins>
   </build>
     <repositories>
@@ -120,11 +140,6 @@
     </dependency>
     <dependency>
         <groupId>org.graalvm.codeonline</groupId>
-        <artifactId>codeonline-js</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.graalvm.codeonline</groupId>
         <artifactId>codeonline-models</artifactId>
         <version>${project.version}</version>
     </dependency>
@@ -150,6 +165,16 @@
         <artifactId>compiler</artifactId>
         <version>16.0.0</version>
         <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.dukescript.libraries</groupId>
+        <artifactId>net.java.html.lib</artifactId>
+        <version>0.5</version>
+    </dependency>
+    <dependency>
+        <groupId>com.dukescript.libraries</groupId>
+        <artifactId>net.java.html.lib.dom</artifactId>
+        <version>0.5</version>
     </dependency>
     <dependency>
         <groupId>org.openjfx</groupId>
@@ -204,4 +229,28 @@
     </dependency>
     ... End of Bck2Brwsr VM presenter for BrowserRunner -->
   </dependencies>
+  <profiles>
+      <profile>
+          <id>explicit-js-engine</id>
+          <activation>
+              <jdk>[11,)</jdk>
+          </activation>
+          <build>
+              <plugins>
+                <plugin>
+                    <groupId>com.dukescript.libraries</groupId>
+                    <artifactId>typings-maven-plugin</artifactId>
+                    <version>0.5</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.openjdk.nashorn</groupId>
+                            <artifactId>nashorn-core</artifactId>
+                            <version>15.3</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+              </plugins>
+          </build>
+      </profile>
+  </profiles>
 </project>

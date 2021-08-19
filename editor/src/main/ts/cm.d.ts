@@ -1,7 +1,43 @@
+// Type definitions for CodeMirror, taken from the DefinitelyTyped project.
+//
+// This project is licensed under the MIT license.
+// Copyrights are respective of each contributor listed at the beginning of each
+// definition file.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+// - Forked from commit SHA 5d4032b8369ea8c85b26aec7f4dc74ad185e693d.
+// - Joined files "types/codemirror/index.d.ts" and
+//   "types/codemirror/codemirror-showhint.d.ts".
+// - Removed .on() specializations with constant event names,
+//   which compiled to java.lang.Void.
+// - Removed declaration for module "codemirror/addon/hint/show-hint",
+//   which compiled to invalid package name.
+// - Renamed "codemirror" module in show-hint to "ShowHint".
+
 // Type definitions for CodeMirror
 // Project: https://github.com/marijnh/CodeMirror
 // Definitions by: mihailik <https://github.com/mihailik>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
+export = CodeMirror;
+export as namespace CodeMirror;
 
 declare function CodeMirror(host: HTMLElement, options?: CodeMirror.EditorConfiguration): CodeMirror.Editor;
 declare function CodeMirror(callback: (host: HTMLElement) => void , options?: CodeMirror.EditorConfiguration): CodeMirror.Editor;
@@ -42,58 +78,6 @@ declare namespace CodeMirror {
     function on(element: any, eventName: string, handler: Function): void;
     function off(element: any, eventName: string, handler: Function): void;
 
-    /** Fired whenever a change occurs to the document. changeObj has a similar type as the object passed to the editor's "change" event,
-    but it never has a next property, because document change events are not batched (whereas editor change events are). */
-    function on(doc: Doc, eventName: 'change', handler: (instance: Doc, change: EditorChange) => void ): void;
-    function off(doc: Doc, eventName: 'change', handler: (instance: Doc, change: EditorChange) => void ): void;
-
-    /** See the description of the same event on editor instances. */
-    function on(doc: Doc, eventName: 'beforeChange', handler: (instance: Doc, change: EditorChangeCancellable) => void ): void;
-    function off(doc: Doc, eventName: 'beforeChange', handler: (instance: Doc, change: EditorChangeCancellable) => void ): void;
-
-    /** Fired whenever the cursor or selection in this document changes. */
-    function on(doc: Doc, eventName: 'cursorActivity', handler: (instance: CodeMirror.Editor) => void ): void;
-    function off(doc: Doc, eventName: 'cursorActivity', handler: (instance: CodeMirror.Editor) => void ): void;
-
-    /** Equivalent to the event by the same name as fired on editor instances. */
-    function on(doc: Doc, eventName: 'beforeSelectionChange', handler: (instance: CodeMirror.Editor, selection: { head: Position; anchor: Position; }) => void ): void;
-    function off(doc: Doc, eventName: 'beforeSelectionChange', handler: (instance: CodeMirror.Editor, selection: { head: Position; anchor: Position; }) => void ): void;
-
-    /** Will be fired when the line object is deleted. A line object is associated with the start of the line.
-    Mostly useful when you need to find out when your gutter markers on a given line are removed. */
-    function on(line: LineHandle, eventName: 'delete', handler: () => void ): void;
-    function off(line: LineHandle, eventName: 'delete', handler: () => void ): void;
-
-    /** Fires when the line's text content is changed in any way (but the line is not deleted outright).
-    The change object is similar to the one passed to change event on the editor object. */
-    function on(line: LineHandle, eventName: 'change', handler: (line: LineHandle, change: EditorChange) => void ): void;
-    function off(line: LineHandle, eventName: 'change', handler: (line: LineHandle, change: EditorChange) => void ): void;
-
-    /** Fired when the cursor enters the marked range. From this event handler, the editor state may be inspected but not modified,
-    with the exception that the range on which the event fires may be cleared. */
-    function on(marker: TextMarker, eventName: 'beforeCursorEnter', handler: () => void ): void;
-    function off(marker: TextMarker, eventName: 'beforeCursorEnter', handler: () => void ): void;
-
-    /** Fired when the range is cleared, either through cursor movement in combination with clearOnEnter or through a call to its clear() method.
-    Will only be fired once per handle. Note that deleting the range through text editing does not fire this event,
-    because an undo action might bring the range back into existence. */
-    function on(marker: TextMarker, eventName: 'clear', handler: () => void ): void;
-    function off(marker: TextMarker, eventName: 'clear', handler: () => void ): void;
-
-    /** Fired when the last part of the marker is removed from the document by editing operations. */
-    function on(marker: TextMarker, eventName: 'hide', handler: () => void ): void;
-    function off(marker: TextMarker, eventName: 'hide', handler: () => void ): void;
-
-    /** Fired when, after the marker was removed by editing, a undo operation brought the marker back. */
-    function on(marker: TextMarker, eventName: 'unhide', handler: () => void ): void;
-    function off(marker: TextMarker, eventName: 'unhide', handler: () => void ): void;
-
-    /** Fired whenever the editor re-adds the widget to the DOM. This will happen once right after the widget is added (if it is scrolled into view),
-    and then again whenever it is scrolled out of view and back in again, or when changes to the editor options
-    or the line the widget is on require the widget to be redrawn. */
-    function on(line: LineWidget, eventName: 'redraw', handler: () => void ): void;
-    function off(line: LineWidget, eventName: 'redraw', handler: () => void ): void;
-
     /** Various CodeMirror-related objects emit events, which allow client code to react to various situations.
     Handlers for such events can be registered with the on and off methods on the objects that the event fires on.
     To fire your own events, use CodeMirror.signal(target, name, args...), where target is a non-DOM-node object. */
@@ -115,6 +99,8 @@ declare namespace CodeMirror {
         The other arguments and the returned value have the same interpretation as they have in findPosH. */
         findPosV(start: CodeMirror.Position, amount: number, unit: string): { line: number; ch: number; hitSide?: boolean; };
 
+        /** Returns the start and end of the 'word' (the stretch of letters, whitespace, or punctuation) at the given position. */
+        findWordAt(pos: CodeMirror.Position): CodeMirror.Range;
 
         /** Change the configuration of the editor. option should the name of an option, and value should be a valid value for that option. */
         setOption(option: string, value: any): void;
@@ -173,7 +159,14 @@ declare namespace CodeMirror {
         /** Remove a CSS class from a line.line can be a line handle or number.
         where should be one of "text", "background", or "wrap"(see addLineClass).
         class can be left off to remove all classes for the specified node, or be a string to remove only a specific class. */
-        removeLineClass(line: any, where: string, class_: string): CodeMirror.LineHandle;
+        removeLineClass(line: any, where: string, class_?: string): CodeMirror.LineHandle;
+
+        /**
+         * Compute the line at the given pixel height.
+         *
+         * `mode` is the relative element to use to compute this line - defaults to 'page' if not specified
+         */
+        lineAtHeight(height: number, mode?: 'window' | 'page' | 'local'): number
 
         /** Returns the line number, text content, and marker status of the given line, which can be either a number or a line handle. */
         lineInfo(line: any): {
@@ -181,7 +174,7 @@ declare namespace CodeMirror {
             handle: any;
             text: string;
             /** Object mapping gutter IDs to marker elements. */
-            gutterMarks: any;
+            gutterMarkers: any;
             textClass: string;
             bgClass: string;
             wrapClass: string;
@@ -220,14 +213,7 @@ declare namespace CodeMirror {
 
         /** Get an { left , top , width , height , clientWidth , clientHeight } object that represents the current scroll position, the size of the scrollable area,
         and the size of the visible area(minus scrollbars). */
-        getScrollInfo(): {
-            left: any;
-            top: any;
-            width: any;
-            height: any;
-            clientWidth: any;
-            clientHeight: any;
-        }
+        getScrollInfo(): CodeMirror.ScrollInfo;
 
         /** Scrolls the given element into view. pos is a { line , ch } position, referring to a given character, null, to refer to the cursor.
         The margin parameter is optional. When given, it indicates the amount of pixels around the given area that should be made visible as well. */
@@ -374,7 +360,7 @@ declare namespace CodeMirror {
 
         /** Replace the part of the document between from and to with the given string.
         from and to must be {line, ch} objects. to can be left off to simply insert the string at position from. */
-        replaceRange(replacement: string, from: CodeMirror.Position, to: CodeMirror.Position): void;
+        replaceRange(replacement: string, from: CodeMirror.Position, to?: CodeMirror.Position, origin?: string): void;
 
         /** Get the content of line n. */
         getLine(n: number): string;
@@ -549,6 +535,15 @@ declare namespace CodeMirror {
         text: string;
     }
 
+    interface ScrollInfo {
+        left: any;
+        top: any;
+        width: any;
+        height: any;
+        clientWidth: any;
+        clientHeight: any;
+    }
+
     interface TextMarker {
         /** Remove the mark. */
         clear(): void;
@@ -600,9 +595,11 @@ declare namespace CodeMirror {
         (line: number, ch?: number): Position;
     }
 
-    interface Range{
-        from: CodeMirror.Position;
-        to: CodeMirror.Position;
+    interface Range {
+        anchor: CodeMirror.Position;
+        head: CodeMirror.Position;
+        from(): CodeMirror.Position;
+        to(): CodeMirror.Position;
     }
 
     interface Position {
@@ -1004,6 +1001,12 @@ declare namespace CodeMirror {
     function defineMode(id: string, modefactory: ModeFactory<any>): void;
 
     /**
+     * id will be the id for the defined mode. Typically, you should use this second argument to defineMode as your module scope function
+     * (modes should not leak anything into the global scope!), i.e. write your whole mode inside this function.
+     */
+    function defineMode<T>(id: string, modefactory: ModeFactory<T>): void;
+
+    /**
      * The first argument is a configuration object as passed to the mode constructor function, and the second argument
      * is a mode specification as in the EditorConfiguration mode option.
      */
@@ -1015,7 +1018,7 @@ declare namespace CodeMirror {
      * Both modes get to parse all of the text, but when both assign a non-null style to a piece of code, the overlay wins, unless
      * the combine argument was true and not overridden, or state.overlay.combineTokens was true, in which case the styles are combined.
      */
-    function overlayMode<T, S>(base: Mode<T>, overlay: Mode<S>, combine?: boolean): Mode<any>
+    function overlayMode<T, S>(base: Mode<T>, overlay: Mode<S>, combine?: boolean): Mode<any>;
 
     /**
      * async specifies that the lint process runs asynchronously. hasGutters specifies that lint errors should be displayed in the CodeMirror
@@ -1032,13 +1035,20 @@ declare namespace CodeMirror {
      * linter.
      */
     interface LintOptions extends LintStateOptions {
-        getAnnotations: AnnotationsCallback;
+        getAnnotations: Linter | AsyncLinter;
+    }
+
+    /**
+     * A function that return errors found during the linting process.
+     */
+    interface Linter {
+        (content: string, options: LintStateOptions, codeMirror: Editor): Annotation[] | PromiseLike<Annotation[]>;
     }
 
     /**
      * A function that calls the updateLintingCallback with any errors found during the linting process.
      */
-    interface AnnotationsCallback {
+    interface AsyncLinter {
         (content: string, updateLintingCallback: UpdateLintingCallback, options: LintStateOptions, codeMirror: Editor): void;
     }
 
@@ -1059,8 +1069,190 @@ declare namespace CodeMirror {
         severity?: string;
         to?: Position;
     }
+
+    /**
+     * A function that calculates either a two-way or three-way merge between different sets of content.
+     */
+    function MergeView(element: HTMLElement, options?: MergeView.MergeViewEditorConfiguration): MergeView.MergeViewEditor;
+
+    namespace MergeView {
+      /**
+       * Options available to MergeView.
+       */
+      interface MergeViewEditorConfiguration extends EditorConfiguration {
+          /**
+           * Determines whether the original editor allows editing. Defaults to false.
+           */
+          allowEditingOriginals?: boolean;
+
+          /**
+           * When true stretches of unchanged text will be collapsed. When a number is given, this indicates the amount
+           * of lines to leave visible around such stretches (which defaults to 2). Defaults to false.
+           */
+          collapseIdentical?: boolean | number;
+
+          /**
+           * Sets the style used to connect changed chunks of code. By default, connectors are drawn. When this is set to "align",
+           * the smaller chunk is padded to align with the bigger chunk instead.
+           */
+          connect?: string;
+
+          /**
+           * Callback for when stretches of unchanged text are collapsed.
+           */
+          onCollapse?(mergeView: MergeViewEditor, line: number, size: number, mark: TextMarker): void;
+
+          /**
+           * Provides original version of the document to be shown on the right of the editor.
+           */
+          orig: any;
+
+          /**
+           * Provides original version of the document to be shown on the left of the editor.
+           * To create a 2-way (as opposed to 3-way) merge view, provide only one of origLeft and origRight.
+           */
+          origLeft?: any;
+
+          /**
+           * Provides original version of document to be shown on the right of the editor.
+           * To create a 2-way (as opposed to 3-way) merge view, provide only one of origLeft and origRight.
+           */
+          origRight?: any;
+
+          /**
+           * Determines whether buttons that allow the user to revert changes are shown. Defaults to true.
+           */
+          revertButtons?: boolean;
+
+          /**
+           * When true, changed pieces of text are highlighted. Defaults to true.
+           */
+          showDifferences?: boolean;
+      }
+
+      interface MergeViewEditor extends Editor {
+          /**
+           * Returns the editor instance.
+           */
+          editor(): Editor;
+
+          /**
+           * Left side of the merge view.
+           */
+          left: DiffView;
+          leftChunks(): MergeViewDiffChunk;
+          leftOriginal(): Editor;
+
+          /**
+           * Right side of the merge view.
+           */
+          right: DiffView;
+          rightChunks(): MergeViewDiffChunk;
+          rightOriginal(): Editor;
+
+          /**
+           * Sets whether or not the merge view should show the differences between the editor views.
+           */
+          setShowDifferences(showDifferences: boolean): void;
+      }
+
+      /**
+       * Tracks changes in chunks from oroginal to new.
+       */
+      interface MergeViewDiffChunk {
+          editFrom: number;
+          editTo: number;
+          origFrom: number;
+          origTo: number;
+      }
+
+      interface DiffView {
+          /**
+           * Forces the view to reload.
+           */
+          forceUpdate(): (mode: string) => void;
+
+          /**
+           * Sets whether or not the merge view should show the differences between the editor views.
+           */
+          setShowDifferences(showDifferences: boolean): void;
+      }
+    }
 }
 
-//declare module "codemirror" {
-    export = CodeMirror;
-//}
+// Type definitions for CodeMirror
+// Project: https://github.com/marijnh/CodeMirror
+// Definitions by: jacqt <https://github.com/jacqt>
+//                 basarat <https://github.com/basarat>
+//                 mbilsing <https://github.com/mbilsing>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
+// See docs https://codemirror.net/doc/manual.html#addon_show-hint
+
+declare module "ShowHint" {
+    var commands: any;
+
+    /** Provides a framework for showing autocompletion hints. Defines editor.showHint, which takes an optional
+    options object, and pops up a widget that allows the user to select a completion. Finding hints is done with
+    a hinting functions (the hint option), which is a function that take an editor instance and options object,
+    and return a {list, from, to} object, where list is an array of strings or objects (the completions), and
+    from and to give the start and end of the token that is being completed as {line, ch} objects. An optional
+    selectedHint property (an integer) can be added to the completion object to control the initially selected hint. */
+    function showHint(cm: CodeMirror.Editor, hinter?: HintFunction, options?: ShowHintOptions): void;
+
+    interface Hints {
+        from: Position;
+        to: Position;
+        list: (Hint | string)[];
+    }
+
+    /** Interface used by showHint.js Codemirror add-on
+    When completions aren't simple strings, they should be objects with the following properties: */
+    interface Hint {
+        text: string;
+        className?: string;
+        displayText?: string;
+        from?: Position;
+        /** Called if a completion is picked. If provided *you* are responsible for applying the completion */
+        hint?: (cm: CodeMirror.Editor, data: Hints, cur: Hint) => void;
+        render?: (element: HTMLLIElement, data: Hints, cur: Hint) => void;
+        to?: Position;
+    }
+
+    interface Editor {
+        /** An extension of the existing CodeMirror typings for the Editor.on("keyup", func) syntax */
+        on(eventName: string, handler: (doc: CodeMirror.Doc, event: any) => void): void;
+        off(eventName: string, handler: (doc: CodeMirror.Doc, event: any) => void): void;
+        showHint: (options: ShowHintOptions) => void;
+    }
+
+    interface HintFunction {
+        (cm: CodeMirror.Editor): Hints;
+    }
+
+    interface AsyncHintFunction {
+        (cm: CodeMirror.Editor, callback: (hints: Hints) => any): any;
+        async?: boolean;
+    }
+
+    interface ShowHintOptions {
+        completeSingle: boolean;
+        hint: HintFunction | AsyncHintFunction;
+    }
+
+    /** The Handle used to interact with the autocomplete dialog box.*/
+    interface Handle {
+        moveFocus(n: number, avoidWrap: boolean): void;
+        setFocus(n: number): void;
+        menuSize(): number;
+        length: number;
+        close(): void;
+        pick(): void;
+        data: any;
+    }
+
+    interface EditorConfiguration {
+        showHint?: boolean;
+        hintOptions?: ShowHintOptions;
+    }
+}

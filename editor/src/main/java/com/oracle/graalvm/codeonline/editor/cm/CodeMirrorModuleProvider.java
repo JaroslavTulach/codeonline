@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package com.oracle.graalvm.codeonline.js;
+package com.oracle.graalvm.codeonline.editor.cm;
 
-import net.java.html.junit.BrowserRunner;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import net.java.html.lib.Exports;
+import net.java.html.lib.Modules;
+import net.java.html.lib.Objs;
 
-/** Tests for behavior of @JavaScriptBody methods. The {@link BrowserRunner}
- * selects all possible presenters from your <code>pom.xml</code> and
- * runs the tests inside of them.
- *
- * See your <code>pom.xml</code> dependency section for details.
- */
-@RunWith(BrowserRunner.class)
-public class JsInteractionTest {
-    @Test
-    public void emptyTest() {
+public class CodeMirrorModuleProvider extends Modules.Provider {
+    private CodeMirrorModuleProvider() {}
+
+    @Override
+    protected Objs find(String string) {
+        if(string.equals("CodeMirror"))
+            return Exports.$as(Exports.eval("CodeMirror"));
+        return null;
+    }
+
+    public static void register() {
+        new CodeMirrorModuleProvider();
     }
 }

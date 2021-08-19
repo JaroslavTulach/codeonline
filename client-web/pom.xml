@@ -178,14 +178,6 @@
         </dependency>
         <dependency>
             <groupId>org.graalvm.codeonline</groupId>
-            <artifactId>codeonline-js</artifactId>
-            <version>${project.version}</version>
-            <classifier>bck2brwsr</classifier>
-            <scope>provided</scope>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.codeonline</groupId>
             <artifactId>compiler</artifactId>
             <version>${project.version}</version>
             <classifier>bck2brwsr</classifier>
@@ -406,7 +398,7 @@
                                         <buildArg>-H:-ClosureCompiler</buildArg>
                                         <buildArg>-H:IncludeResourceBundles=com.sun.tools.javac.resources.compiler,com.sun.tools.javac.resources.javac</buildArg>
                                         <buildArg>-H:CompilerConfig=CONFIG_JUNIT_BROWSER</buildArg>
-                                        <buildArg>--initialize-at-run-time=net.java.html.lib,com.oracle.graalvm.codeonline.editor.Editor</buildArg>
+                                        <buildArg>--initialize-at-run-time=net.java.html.lib,com.oracle.graalvm.codeonline.editor.cm</buildArg>
                                     </buildArgs>
                                 </configuration>
                             </execution>

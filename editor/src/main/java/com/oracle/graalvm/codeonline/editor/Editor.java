@@ -16,6 +16,15 @@
 
 package com.oracle.graalvm.codeonline.editor;
 
+import com.oracle.graalvm.codeonline.editor.cm.CodeMirror.Doc;
+import com.oracle.graalvm.codeonline.editor.cm.CodeMirror.EditorFromTextArea;
+import com.oracle.graalvm.codeonline.editor.cm.CodeMirror.Position;
+import com.oracle.graalvm.codeonline.editor.cm.CodeMirror.TextMarker;
+import com.oracle.graalvm.codeonline.editor.cm.CodeMirror.TextMarkerOptions;
+import com.oracle.graalvm.codeonline.editor.cm.CodeMirrorFactory;
+import com.oracle.graalvm.codeonline.editor.cm.ShowHint.Hint;
+import com.oracle.graalvm.codeonline.editor.cm.ShowHint.Hints;
+import com.oracle.graalvm.codeonline.editor.cm.ShowHint.ShowHintOptions;
 import com.oracle.graalvm.codeonline.json.CompilationRequest;
 import com.oracle.graalvm.codeonline.json.CompilationResult;
 import com.oracle.graalvm.codeonline.json.CompilationResultModel;
@@ -31,15 +40,6 @@ import java.util.stream.Stream;
 import javax.tools.Diagnostic;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
-import net.java.html.lib.codemirror.CodeMirror.Doc;
-import net.java.html.lib.codemirror.CodeMirror.EditorConfiguration;
-import net.java.html.lib.codemirror.CodeMirror.EditorFromTextArea;
-import net.java.html.lib.codemirror.CodeMirror.Position;
-import net.java.html.lib.codemirror.CodeMirror.TextMarker;
-import net.java.html.lib.codemirror.CodeMirror.TextMarkerOptions;
-import net.java.html.lib.codemirror.showhint.CodeMirror.Hint;
-import net.java.html.lib.codemirror.showhint.CodeMirror.Hints;
-import net.java.html.lib.codemirror.showhint.CodeMirror.ShowHintOptions;
 import net.java.html.lib.dom.Element;
 import net.java.html.lib.dom.EventListener;
 import net.java.html.lib.dom.HTMLElement;
@@ -56,18 +56,6 @@ import net.java.html.lib.dom.Text;
  */
 public class Editor {
     private static final String EDITOR_PROPERTY = "codeonline.Editor";
-    private static final EditorConfiguration CODEMIRROR_CONF;
-
-    static {
-        CodeMirrorModuleProvider.register();
-        net.java.html.lib.codemirror.CodeMirror.Exports.registerHelper("hint", "clike", JavaHintHelper.create());
-        EditorConfiguration conf = new Objs().$cast(EditorConfiguration.class);
-        conf.lineNumbers.set(true);
-        conf.mode.set("text/x-java");
-        conf.extraKeys.set(Objs.$as(Objs.create(null)).$set("Ctrl-Space", "autocomplete"));
-        conf.indentUnit.set(4);
-        CODEMIRROR_CONF = conf;
-    }
 
     private final EditorParams params;
     private final ArrayList<TextMarker> markers = new ArrayList<>();
@@ -101,7 +89,7 @@ public class Editor {
         HTMLTextAreaElement ta = newElement.appendChild(document.createElement("textarea")).$cast(HTMLTextAreaElement.class);
         ta.value.set(origSource);
         oldElement.parentNode().replaceChild(newElement, oldElement);
-        codeMirror = net.java.html.lib.codemirror.CodeMirror.Exports.fromTextArea(ta, CODEMIRROR_CONF);
+        codeMirror = CodeMirrorFactory.create(ta);
         doc = codeMirror.getDoc();
         codeMirror.$set(EDITOR_PROPERTY, this);
         on("changes", this::compile);
@@ -391,14 +379,14 @@ public class Editor {
 
     private void updateOrCloseHints() {
         if(hintActive() && hintRelevant(doc.getCursor()))
-            net.java.html.lib.codemirror.showhint.CodeMirror.Exports.showHint(net.java.html.lib.codemirror.showhint.CodeMirror.Doc.$as(codeMirror));
+            com.oracle.graalvm.codeonline.editor.cm.ShowHint.Exports.showHint(codeMirror);
     }
 
     private static Hints makeHints(Stream<Hint> list, Position from, Position to) {
         Hints hints = new Objs().$cast(Hints.class);
         ((Objs.Property) hints.list).set(list.toArray());
-        ((Objs.Property) hints.from).set(from);
-        ((Objs.Property) hints.to).set(to);
+        hints.from.set(from);
+        hints.to.set(to);
         return hints;
     }
 
