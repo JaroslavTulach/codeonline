@@ -11,14 +11,15 @@ to keep things simple let's start with JDK11 on Linux or Mac:
 ```bash
 codeonline$ export JAVA_HOME=/jdk-11
 codeonline$ mvn clean install
-codeonline$ mvn -f client-desktop -Pdesktop exec:exec
+codeonline$ mvn -f live-doc-ui-test -P desktop process-classes exec:exec
+codeonline$ mvn -f live-doc-test package bck2brwsr:show
 ```
 
 The `exec:exec` command launches the project in JavaFX WebView emulator mode
 suitable for debugging Java code in the selected JDK. Use...
 
 ```bash
-codeonline$ mvn -f client-desktop/ -Pdesktop exec:exec \
+codeonline$ mvn -f live-doc-ui-test -P desktop process-classes exec:exec \
   -Dexec.debug.arg=-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=y
 ```
 

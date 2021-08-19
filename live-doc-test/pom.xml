@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.graalvm.codeonline</groupId>
+        <artifactId>codeonline-live-doc-base</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath></relativePath>
+    </parent>
+
+    <groupId>org.graalvm.codeonline.test</groupId>
+    <artifactId>codeonline-live-doc-test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <codeonline.classpath>${org.graalvm.sdk:graal-sdk:jar}</codeonline.classpath>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>21.2.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>add-html</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <outputDirectory>${codeonline.outputDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/html</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apidesign.bck2brwsr</groupId>
+                <artifactId>bck2brwsr-maven-plugin</artifactId>
+                <version>0.51</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>show</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <directory>${codeonline.outputDirectory}</directory>
+                    <startpage>index.html</startpage>
+                </configuration>
+            </plugin>
+            <!-- TODO other VMs -->
+            <plugin>
+                <groupId>org.graalvm.aotjs</groupId>
+                <artifactId>aotjs-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
