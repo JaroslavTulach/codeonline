@@ -1,14 +1,14 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.graalvm.codeonline</groupId>
-  <artifactId>codeonline-pom</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+    <groupId>org.graalvm.codeonline</groupId>
+    <artifactId>codeonline-pom</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>CodeOnline</name>
 
-  <name>codeonline</name>
     <modules>
         <module>javac</module>
         <module>models</module>
@@ -19,49 +19,16 @@
         <module>live-doc-base</module>
         <module>live-doc-ui</module>
     </modules>
+
     <properties>
         <net.java.html.version>1.7.2</net.java.html.version>
-        <openjfx.version>11</openjfx.version>
         <bck2brwsr.version>0.51</bck2brwsr.version>
         <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
         <junit.browser.version>1.0</junit.browser.version>
-        <jersey.version>2.13</jersey.version>
-        <presenters.version>1.7.1</presenters.version>
         <enforcer.fail>false</enforcer.fail>
-        <netbeans.version>RELEASE81</netbeans.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.dukescript.api</groupId>
-                <artifactId>junit-osgi</artifactId>
-                <scope>test</scope>
-                <version>4.12</version>
-            </dependency>
-            <dependency>
-                <groupId>com.dukescript.api</groupId>
-                <artifactId>junit-browser-runner</artifactId>
-                <version>${junit.browser.version}</version>
-                <scope>test</scope>
-                <type>jar</type>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.netbeans.html</groupId>
-                        <artifactId>net.java.html</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.netbeans.html</groupId>
-                        <artifactId>net.java.html.boot</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apidesign.bck2brwsr</groupId>
-                        <artifactId>emul</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -98,7 +65,7 @@
                             <fail>${enforcer.fail}</fail>
                         </configuration>
                     </execution>
-                </executions>              
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -9,35 +9,9 @@
     <packaging>pom</packaging>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <codeonline.outputDirectory>${project.build.directory}/codeonline</codeonline.outputDirectory>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.graalvm.codeonline</groupId>
-            <artifactId>codeonline-compiler-nbjavac</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.codeonline</groupId>
-            <artifactId>codeonline-build</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.codeonline</groupId>
-            <artifactId>codeonline-live-doc-ui</artifactId>
-            <version>${project.version}</version>
-            <type>js</type>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.frgaal</groupId>
-            <artifactId>compiler</artifactId>
-            <version>16.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
@@ -140,4 +114,31 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.graalvm.codeonline</groupId>
+            <artifactId>codeonline-compiler-nbjavac</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.codeonline</groupId>
+            <artifactId>codeonline-build</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.codeonline</groupId>
+            <artifactId>codeonline-live-doc-ui</artifactId>
+            <version>${project.version}</version>
+            <type>js</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.frgaal</groupId>
+            <artifactId>compiler</artifactId>
+            <version>16.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>
