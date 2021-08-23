@@ -17,7 +17,7 @@
             <plugin>
                 <groupId>com.dukescript.libraries</groupId>
                 <artifactId>typings-maven-plugin</artifactId>
-                <version>0.5</version>
+                <version>${typings.version}</version>
                 <executions>
                     <execution>
                         <id>cm-typings</id>
@@ -46,12 +46,12 @@
         <dependency>
             <groupId>com.dukescript.libraries</groupId>
             <artifactId>net.java.html.lib</artifactId>
-            <version>0.5</version>
+            <version>${typings.version}</version>
         </dependency>
         <dependency>
             <groupId>com.dukescript.libraries</groupId>
             <artifactId>net.java.html.lib.dom</artifactId>
-            <version>0.5</version>
+            <version>${typings.version}</version>
         </dependency>
     </dependencies>
 
@@ -66,7 +66,7 @@
                     <plugin>
                         <groupId>com.dukescript.libraries</groupId>
                         <artifactId>typings-maven-plugin</artifactId>
-                        <version>0.5</version>
+                        <version>${typings.version}</version>
                         <dependencies>
                             <dependency>
                                 <groupId>org.openjdk.nashorn</groupId>
