@@ -52,7 +52,6 @@
                             <mainClass>com.oracle.graalvm.codeonline.build.GenerateSignatures</mainClass>
                             <classpathScope>compile</classpathScope>
                             <arguments combine.self="override">
-                                <argument>${project.packaging}</argument>
                                 <argument>${project.build.directory}/classes/extres/</argument>
                                 <argument>${org.frgaal:compiler:jar}</argument>
                                 <argument>${codeonline.classpath}</argument>

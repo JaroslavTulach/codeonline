@@ -9,8 +9,20 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <netbeans.version>RELEASE81</netbeans.version>
+    </properties>
+
     <artifactId>codeonline-compiler-nbjavac</artifactId>
     <name>CodeOnline NBJavac Compiler</name>
+
+    <repositories>
+        <repository>
+            <id>netbeans</id>
+            <name>NetBeans</name>
+            <url>http://bits.netbeans.org/maven2/</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -24,9 +36,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.codeonline</groupId>
-            <artifactId>compiler</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.netbeans.external</groupId>
+            <artifactId>nb-javac-api</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.external</groupId>
+            <artifactId>nb-javac-impl</artifactId>
+            <version>${netbeans.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -18,13 +18,12 @@ package com.oracle.graalvm.codeonline.json;
 
 import java.util.Locale;
 import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 import net.java.html.json.Model;
 import net.java.html.json.Property;
 
 @Model(className = "Diag", properties = {
-    @Property(name = "kind", type = Kind.class),
+    @Property(name = "kind", type = DiagModel.Kind.class),
     @Property(name = "position", type = long.class),
     @Property(name = "startPosition", type = long.class),
     @Property(name = "endPosition", type = long.class),
@@ -34,9 +33,32 @@ import net.java.html.json.Property;
     @Property(name = "message", type = String.class)
 })
 public final class DiagModel {
+    public static final long NOPOS = Diagnostic.NOPOS;
+
+    public enum Kind {
+        ERROR,
+        WARNING,
+        NOTE;
+
+        public static Kind from(Diagnostic.Kind kind) {
+            switch(kind) {
+                case ERROR:
+                    return ERROR;
+                case WARNING:
+                case MANDATORY_WARNING:
+                    return WARNING;
+                case NOTE:
+                case OTHER:
+                    return NOTE;
+                default:
+                    throw new AssertionError();
+            }
+        }
+    }
+
     public static Diag createDiag(Diagnostic<? extends JavaFileObject> diag) {
         return new Diag(
-                diag.getKind(),
+                Kind.from(diag.getKind()),
                 diag.getPosition(),
                 diag.getStartPosition(),
                 diag.getEndPosition(),

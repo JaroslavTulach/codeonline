@@ -47,22 +47,10 @@
                 <groupId>org.apidesign.bck2brwsr</groupId>
                 <artifactId>bck2brwsr-maven-plugin</artifactId>
                 <version>0.52</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>show</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <directory>${codeonline.outputDirectory}</directory>
                     <startpage>index.html</startpage>
                 </configuration>
-            </plugin>
-            <!-- TODO other VMs -->
-            <plugin>
-                <groupId>org.graalvm.aotjs</groupId>
-                <artifactId>aotjs-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

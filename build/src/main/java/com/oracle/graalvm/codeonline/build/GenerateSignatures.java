@@ -42,22 +42,19 @@ public final class GenerateSignatures {
     }
 
     public static void main(String[] args) throws IOException {
-        if(args.length != 4) {
-            throw new IllegalArgumentException("Usage: GenerateSignatures ${project.packaging} <outputDir> ${org.frgaal:compiler:jar} ${codeonline.classpath}");
+        if(args.length != 3) {
+            throw new IllegalArgumentException("Usage: GenerateSignatures <outputDir> ${org.frgaal:compiler:jar} ${codeonline.classpath}");
         }
-        if(args[0].equals("pom")) {
-            System.out.println("This is a POM project, skipping GenerateSignatures");
-            return;
-        }
-        File outputDir = new File(args[1]);
-        File platformClassPath = new File(args[2]);
+        File outputDir = new File(args[0]);
+        File platformClassPath = new File(args[1]);
+        String userClassPathStr = args[2];
         File[] userClassPath;
-        if(args[3] == null || args[3].isEmpty()) {
+        if(userClassPathStr == null || userClassPathStr.isEmpty()) {
             System.out.println("Warning: ${codeonline.classpath} was empty. Only Java library classes will be available for code completion and highlighting.");
             System.out.println("To enable access to your library, specify <codeonline.classpath>...</codeonline.classpath> in your project <properties>.");
             userClassPath = new File[0];
         } else {
-            userClassPath = Arrays.stream(args[3].split(File.pathSeparator)).map(File::new).toArray(File[]::new);
+            userClassPath = Arrays.stream(userClassPathStr.split(File.pathSeparator)).map(File::new).toArray(File[]::new);
         }
         outputDir.mkdirs();
         try(PrintStream printStream = new PrintStream(new File(outputDir, "available.txt"))) {

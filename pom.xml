@@ -10,12 +10,11 @@
     <name>CodeOnline</name>
 
     <modules>
-        <module>javac</module>
         <module>models</module>
+        <module>build</module>
         <module>editor</module>
         <module>compiler-common</module>
         <module>compiler-nbjavac</module>
-        <module>build</module>
         <module>live-doc-base</module>
         <module>live-doc-ui</module>
     </modules>

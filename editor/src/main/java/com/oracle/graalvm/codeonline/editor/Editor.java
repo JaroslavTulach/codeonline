@@ -32,12 +32,11 @@ import com.oracle.graalvm.codeonline.json.CompletionItem;
 import com.oracle.graalvm.codeonline.json.CompletionList;
 import com.oracle.graalvm.codeonline.json.CompletionListModel;
 import com.oracle.graalvm.codeonline.json.Diag;
+import com.oracle.graalvm.codeonline.json.DiagModel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.tools.Diagnostic;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
 import net.java.html.lib.dom.Element;
@@ -81,9 +80,9 @@ public class Editor {
         newElement.appendChild(document.createTextNode(" "));
         newElement.appendChild(createButton("Reset", this::reset));
         newElement.appendChild(document.createTextNode(" "));
-        errorIndicator = createIndicator(newElement, "ErrorIndicator", () -> getDiags(k -> k == Diagnostic.Kind.ERROR));
-        warningIndicator = createIndicator(newElement, "WarningIndicator", () -> getDiags(k -> k == Diagnostic.Kind.WARNING || k == Diagnostic.Kind.MANDATORY_WARNING));
-        noteIndicator = createIndicator(newElement, "NoteIndicator", () -> getDiags(k -> k == Diagnostic.Kind.NOTE || k == Diagnostic.Kind.OTHER));
+        errorIndicator = createIndicator(newElement, "ErrorIndicator", () -> getDiags(DiagModel.Kind.ERROR));
+        warningIndicator = createIndicator(newElement, "WarningIndicator", () -> getDiags(DiagModel.Kind.WARNING));
+        noteIndicator = createIndicator(newElement, "NoteIndicator", () -> getDiags(DiagModel.Kind.NOTE));
         noDiagIndicator = createIndicator(newElement, "NoDiagIndicator", () -> "No errors or warnings");
         newElement.appendChild(document.createElement("br"));
         HTMLTextAreaElement ta = newElement.appendChild(document.createElement("textarea")).$cast(HTMLTextAreaElement.class);
@@ -151,11 +150,9 @@ public class Editor {
                         numErrors++;
                         break;
                     case WARNING:
-                    case MANDATORY_WARNING:
                         numWarnings++;
                         break;
                     case NOTE:
-                    case OTHER:
                         numNotes++;
                         break;
                 }
@@ -188,7 +185,7 @@ public class Editor {
 
     private void highlightError(Diag diag) {
         long pos = diag.getPosition();
-        if(pos == Diagnostic.NOPOS)
+        if(pos == DiagModel.NOPOS)
             return;
         long before = pos - diag.getStartPosition();
         long after = diag.getEndPosition() - pos;
@@ -207,11 +204,9 @@ public class Editor {
                 options.className.set("codeonline-error");
                 break;
             case WARNING:
-            case MANDATORY_WARNING:
                 options.className.set("codeonline-warning");
                 break;
             case NOTE:
-            case OTHER:
                 options.className.set("codeonline-note");
                 break;
         }
@@ -220,11 +215,11 @@ public class Editor {
         markers.add(marker);
     }
 
-    private String getDiags(Predicate<Diagnostic.Kind> filter) {
+    private String getDiags(DiagModel.Kind kind) {
         StringBuilder result = new StringBuilder();
         boolean addSep = false;
         for(Diag diag : diags) {
-            if(!filter.test(diag.getKind()))
+            if(diag.getKind() != kind)
                 continue;
             if(addSep)
                 result.append('\n');
@@ -232,9 +227,9 @@ public class Editor {
                 addSep = true;
             long line = diag.getLineNumber(), col = diag.getColumnNumber();
             String msg = diag.getMessage();
-            if(line == Diagnostic.NOPOS)
+            if(line == DiagModel.NOPOS)
                 result.append(diag.getMessage());
-            else if(col == Diagnostic.NOPOS)
+            else if(col == DiagModel.NOPOS)
                 result.append(line).append(": ").append(msg);
             else
                 result.append(line).append(":").append(col).append(": ").append(msg);

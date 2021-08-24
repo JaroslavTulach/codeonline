@@ -32,7 +32,7 @@ public class CodeMirrorFactory {
         EditorConfiguration conf = new Objs().$cast(EditorConfiguration.class);
         conf.lineNumbers.set(true);
         conf.mode.set("text/x-java");
-        conf.extraKeys.set(Objs.$as(Objs.create(null)).$set("Ctrl-Space", "autocomplete"));
+        conf.extraKeys.set(new Objs().$set("Ctrl-Space", "autocomplete"));
         conf.indentUnit.set(4);
         CODEMIRROR_CONF = conf;
     }

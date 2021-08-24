@@ -11,10 +11,41 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <codeonline.outputDirectory>${project.build.directory}/codeonline</codeonline.outputDirectory>
+        <codeonline.x.compiler.class>com.oracle.graalvm.codeonline.compiler.nbjavac.NBJavac</codeonline.x.compiler.class>
+        <codeonline.x.isparent>false</codeonline.x.isparent>
     </properties>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>check-profiles</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${codeonline.x.isparent}</skip>
+                            <rules>
+                                <requireActiveProfile>
+                                    <profiles>codeonline-compiler-aotjs,codeonline-compiler-bck2brwsr</profiles>
+                                    <all>false</all>
+                                    <message>Please select JVM implementation for the compiler by activating exactly one of these profiles.</message>
+                                </requireActiveProfile>
+                                <requireActiveProfile>
+                                    <profiles>codeonline-editor-aotjs,codeonline-editor-bck2brwsr</profiles>
+                                    <all>false</all>
+                                    <message>Please select JVM implementation for the editor by activating exactly one of these profiles.</message>
+                                </requireActiveProfile>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -31,12 +62,11 @@
                         <id>add-ui</id>
                         <phase>prepare-package</phase>
                         <goals>
-                            <goal>copy-dependencies</goal>
+                            <goal>unpack</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>org.graalvm.codeonline</includeGroupIds>
-                            <includeArtifactIds>codeonline-live-doc-ui</includeArtifactIds>
-                            <stripVersion>true</stripVersion>
+                            <skip>${codeonline.x.isparent}</skip>
+                            <artifact>org.graalvm.codeonline:codeonline-live-doc-ui:1.0-SNAPSHOT:zip:${codeonline.x.editorvm}</artifact>
                             <outputDirectory>${codeonline.outputDirectory}</outputDirectory>
                         </configuration>
                     </execution>
@@ -44,12 +74,11 @@
                         <id>add-ui-css</id>
                         <phase>prepare-package</phase>
                         <goals>
-                            <goal>unpack-dependencies</goal>
+                            <goal>unpack</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>org.graalvm.codeonline</includeGroupIds>
-                            <includeArtifactIds>codeonline-editor</includeArtifactIds>
-                            <includeTypes>jar</includeTypes>
+                            <skip>${codeonline.x.isparent}</skip>
+                            <artifact>org.graalvm.codeonline:codeonline-editor:1.0-SNAPSHOT</artifact>
                             <includes>codeonline-editor.css</includes>
                             <outputDirectory>${codeonline.outputDirectory}</outputDirectory>
                         </configuration>
@@ -68,10 +97,10 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
+                            <skip>${codeonline.x.isparent}</skip>
                             <mainClass>com.oracle.graalvm.codeonline.build.GenerateSignatures</mainClass>
                             <classpathScope>compile</classpathScope>
                             <arguments>
-                                <argument>${project.packaging}</argument>
                                 <argument>${codeonline.outputDirectory}/extres/</argument>
                                 <argument>${org.frgaal:compiler:jar}</argument>
                                 <argument>${codeonline.classpath}</argument>
@@ -81,38 +110,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <!-- TODO other VMs -->
-                <plugin>
-                    <groupId>org.graalvm.aotjs</groupId>
-                    <artifactId>aotjs-maven-plugin</artifactId>
-                    <version>1.0-SNAPSHOT</version>
-                    <executions>
-                        <execution>
-                            <id>generate-aotjs</id>
-                            <goals>
-                                <goal>aotjs</goal>
-                            </goals>
-                            <phase>package</phase>
-                            <configuration>
-                                <mainClass>com.oracle.graalvm.codeonline.compiler.nbjavac.NBJavac</mainClass>
-                                <outputDirectory>${codeonline.outputDirectory}</outputDirectory>
-                                <imageName>codeonline-compiler</imageName>
-                                <buildArgs>
-                                    <buildArg>--enable-url-protocols=http</buildArg>
-                                    <buildArg>-H:-ClosureCompiler</buildArg>
-                                    <buildArg>-H:+TraceServiceLoaderFeature</buildArg>
-                                    <buildArg>-H:IncludeResourceBundles=com.sun.tools.javac.resources.compiler,com.sun.tools.javac.resources.javac</buildArg>
-                                    <buildArg>-H:CompilerConfig=CONFIG_JUNIT_BROWSER</buildArg>
-                                    <buildArg>--initialize-at-run-time=net.java.html.lib</buildArg>
-                                </buildArgs>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
     <dependencies>
@@ -128,17 +125,118 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.codeonline</groupId>
-            <artifactId>codeonline-live-doc-ui</artifactId>
-            <version>${project.version}</version>
-            <type>js</type>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.frgaal</groupId>
             <artifactId>compiler</artifactId>
             <version>16.0.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>codeonline-compiler-aotjs</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.aotjs</groupId>
+                        <artifactId>aotjs-maven-plugin</artifactId>
+                        <version>1.0-SNAPSHOT</version>
+                        <executions>
+                            <execution>
+                                <id>generate-aotjs</id>
+                                <goals>
+                                    <goal>aotjs</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <mainClass>${codeonline.x.compiler.class}</mainClass>
+                                    <outputDirectory>${codeonline.outputDirectory}</outputDirectory>
+                                    <imageName>codeonline-compiler</imageName>
+                                    <buildArgs>
+                                        <buildArg>--enable-url-protocols=http</buildArg>
+                                        <buildArg>-H:-ClosureCompiler</buildArg>
+                                        <buildArg>-H:+TraceServiceLoaderFeature</buildArg>
+                                        <buildArg>-H:IncludeResourceBundles=com.sun.tools.javac.resources.compiler,com.sun.tools.javac.resources.javac</buildArg>
+                                        <buildArg>-H:CompilerConfig=CONFIG_JUNIT_BROWSER</buildArg>
+                                        <buildArg>--initialize-at-run-time=net.java.html.lib</buildArg>
+                                    </buildArgs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>codeonline-compiler-bck2brwsr</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apidesign.bck2brwsr</groupId>
+                        <artifactId>bck2brwsr-maven-plugin</artifactId>
+                        <version>1.0-SNAPSHOT</version>
+                        <executions>
+                            <execution>
+                                <id>b2b</id>
+                                <goals>
+                                    <goal>aot</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <vm>${codeonline.outputDirectory}/bck2brwsr.js</vm>
+                                    <mainJavaScript>${codeonline.outputDirectory}/codeonline-compiler-main.js</mainJavaScript>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <phase>generate-resources</phase>
+                                <id>generate-compiler-js</id>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>com.oracle.graalvm.codeonline.build.WriteFile</mainClass>
+                                    <classpathScope>compile</classpathScope>
+                                    <arguments>
+                                        <argument>${codeonline.outputDirectory}/codeonline-compiler.js</argument>
+                                        <argument>importScripts('bck2brwsr.js');</argument>
+                                        <argument>bck2brwsr('codeonline-compiler-main.js').loadClass('${codeonline.x.compiler.class}').invoke('main');</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>codeonline-editor-aotjs</id>
+            <properties>
+                <codeonline.x.editorvm>aotjs</codeonline.x.editorvm>
+            </properties>
+        </profile>
+        <profile>
+            <id>codeonline-editor-bck2brwsr</id>
+            <properties>
+                <codeonline.x.editorvm>bck2brwsr</codeonline.x.editorvm>
+            </properties>
+        </profile>
+        <profile>
+            <id>codeonline-x-parent</id>
+            <activation>
+                <file>
+                    <exists>codeonline.x.isparent</exists>
+                </file>
+            </activation>
+            <properties>
+                <codeonline.x.isparent>true</codeonline.x.isparent>
+            </properties>
+        </profile>
+    </profiles>
 </project>
