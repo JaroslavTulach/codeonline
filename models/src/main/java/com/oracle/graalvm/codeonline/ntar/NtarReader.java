@@ -112,7 +112,6 @@ public final class NtarReader implements Iterable<NtarReader.Entry>, AutoCloseab
         private Entry(String name, byte[] content) {
             this.name = name;
             this.content = content;
-            System.out.println(name + ": " + content.length);
         }
     }
 

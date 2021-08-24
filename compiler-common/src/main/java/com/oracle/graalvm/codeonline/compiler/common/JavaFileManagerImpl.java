@@ -169,14 +169,6 @@ public final class JavaFileManagerImpl implements JavaFileManager {
         return "fo:" + location + "/" + packageName + "/" + relativeName;
     }
 
-    public void debugDump() {
-        for(Map.Entry<String, FileObjectImpl> ent : filesMap.entrySet()) {
-            if(ent.getKey().startsWith("jfo:PLATFORM_CLASS_PATH/"))
-                continue;
-            System.out.println(ent.getKey() + " => " + ent.getValue().contents);
-        }
-    }
-
     private boolean isPackageAvailable(String requestedZip) throws IOException {
         if(availablePackageZips.isEmpty()) {
             try(Scanner s = new Scanner(platformServices.openExternalResource("available.txt"))) {
