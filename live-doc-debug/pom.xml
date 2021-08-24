@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>org.graalvm.codeonline.test</groupId>
-    <artifactId>codeonline-live-doc-ui-test</artifactId>
+    <artifactId>codeonline-live-doc-debug</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
