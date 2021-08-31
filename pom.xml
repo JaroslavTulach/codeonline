@@ -21,7 +21,7 @@
 
     <properties>
         <net.java.html.version>1.7.2</net.java.html.version>
-        <bck2brwsr.version>0.52</bck2brwsr.version>
+        <bck2brwsr.version>0.53</bck2brwsr.version>
         <typings.version>0.15</typings.version>
         <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
         <junit.browser.version>1.0</junit.browser.version>
