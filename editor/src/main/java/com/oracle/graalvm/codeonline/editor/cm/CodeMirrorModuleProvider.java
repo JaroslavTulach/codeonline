@@ -24,8 +24,8 @@ public class CodeMirrorModuleProvider extends Modules.Provider {
     private CodeMirrorModuleProvider() {}
 
     @Override
-    protected Objs find(String string) {
-        if(string.equals("CodeMirror"))
+    protected Objs find(String name) {
+        if(name.equals("CodeMirror") || name.equals("ShowHint"))
             return Exports.$as(Exports.eval("CodeMirror"));
         return null;
     }
