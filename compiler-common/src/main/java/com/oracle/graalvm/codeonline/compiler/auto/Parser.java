@@ -16,7 +16,6 @@
 
 package com.oracle.graalvm.codeonline.compiler.auto;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public final class Parser extends ParserBase {
@@ -28,7 +27,7 @@ public final class Parser extends ParserBase {
     private static final int COND_ELSE = 6;
     private static final int COND_OTHER = 7;
 
-    private static final byte[] INTERFACE = "interface".getBytes(StandardCharsets.US_ASCII);
+    private static final char[] INTERFACE = "interface".toCharArray();
 
     private final int size;
     private int statementEnd;
