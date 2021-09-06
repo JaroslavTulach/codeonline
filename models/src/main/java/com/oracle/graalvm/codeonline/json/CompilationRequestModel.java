@@ -25,6 +25,8 @@ import net.java.html.json.Property;
 
 @Model(className = "CompilationRequest", properties = {
     @Property(name = "source", type = String.class),
+    @Property(name = "imports", type = String.class),
+    @Property(name = "full", type = boolean.class),
     @Property(name = "name", type = String.class),
     @Property(name = "completionOffset", type = int.class)
 })

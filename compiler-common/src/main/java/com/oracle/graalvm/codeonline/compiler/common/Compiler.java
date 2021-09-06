@@ -16,30 +16,48 @@
 
 package com.oracle.graalvm.codeonline.compiler.common;
 
+import com.oracle.graalvm.codeonline.compiler.auto.GeneratedSource;
 import com.oracle.graalvm.codeonline.json.CompilationRequest;
 import com.oracle.graalvm.codeonline.json.CompilationRequestModel;
+import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import com.oracle.graalvm.codeonline.json.CompilationResult;
 import com.oracle.graalvm.codeonline.json.CompletionList;
+import javax.tools.DiagnosticCollector;
+import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 
 public abstract class Compiler {
-    protected abstract CompilationResult compile(JavaFileManager fm, JavaFileObject file) throws Exception;
+    protected abstract boolean compile(JavaFileManager fm, JavaFileObject file, DiagnosticListener<JavaFileObject> diags) throws Exception;
     protected abstract CompletionList complete(JavaFileManager fm, JavaFileObject file, int offset) throws Exception;
 
     public final String handleRequest(PlatformServices platformServices, String requestJson) {
         CompilationRequest request = CompilationRequestModel.parseCompilationRequest(requestJson);
-        boolean noCompletion = (request.getCompletionOffset() == -1);
+        int completionOffset = request.getCompletionOffset();
+        boolean noCompletion = (completionOffset == -1);
         try {
+            String source = request.getSource(), name = request.getName();
+            GeneratedSource generatedSource = null;
+            if(!request.isFull()) {
+                generatedSource = GeneratedSource.from(source, request.getImports());
+                source = generatedSource.generate();
+            }
             JavaFileManagerImpl fm = new JavaFileManagerImpl.Builder(platformServices)
-                    .addSource(request.getName(), request.getSource())
+                    .addSource(name, source)
                     .build();
-            JavaFileObject file = fm.getJavaFileForInput(StandardLocation.SOURCE_PATH, "Main", JavaFileObject.Kind.SOURCE);
+            JavaFileObject file = fm.getJavaFileForInput(StandardLocation.SOURCE_PATH, name, JavaFileObject.Kind.SOURCE);
             if(noCompletion) {
-                return compile(fm, file).toString();
+                DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<>();
+                DiagnosticListener<JavaFileObject> listener = collector;
+                if(generatedSource != null)
+                    listener = generatedSource.diagsConverter(listener);
+                boolean success = compile(fm, file, listener);
+                return CompilationResultModel.createCompilationResult(success, collector.getDiagnostics()).toString();
             } else {
-                return complete(fm, file, request.getCompletionOffset()).toString();
+                if(generatedSource != null)
+                    completionOffset = generatedSource.genOffsetFromOrig(completionOffset);
+                return complete(fm, file, completionOffset).toString();
             }
         } catch(Exception ex) {
             ex.printStackTrace();

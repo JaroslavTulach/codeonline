@@ -59,6 +59,8 @@ public class Editor {
     private final EditorParams params;
     private final ArrayList<TextMarker> markers = new ArrayList<>();
     private String origSource;
+    private String imports;
+    private boolean requireFull;
     private EditorFromTextArea codeMirror;
     private Doc doc;
     private HTMLElement errorIndicator, warningIndicator, noteIndicator, noDiagIndicator;
@@ -75,6 +77,8 @@ public class Editor {
 
     private void initialize(Element oldElement) {
         origSource = unIndent(oldElement.textContent());
+        imports = getImports(oldElement.getAttribute("data-imports"));
+        requireFull = getBoolean(oldElement.getAttribute("data-require-full"), false);
         HTMLElement newElement = document.createElement("div");
         newElement.appendChild(createButton("Save", this::save));
         newElement.appendChild(document.createTextNode(" "));
@@ -125,6 +129,31 @@ public class Editor {
         return result.substring(0, length);
     }
 
+    private static String getImports(String attr) {
+        if(attr == null)
+            return "";
+        final String IMPORT = "import ";
+        String[] items = attr.split("[,;]");
+        StringBuilder result = new StringBuilder(attr.length() + items.length * IMPORT.length() + 2);
+        for (String item : items) {
+            if(item.matches("\\s*")) // .isBlank()
+                continue;
+            if(!item.matches("\\s*import\\s.*"))
+                result.append(IMPORT);
+            result.append(item).append(';');
+        }
+        result.append('\n');
+        return result.toString();
+    }
+
+    private boolean getBoolean(String attr, boolean defaultValue) {
+        if(attr == null) // not present
+            return defaultValue;
+        if(Boolean.toString(defaultValue).equalsIgnoreCase(attr)) // present but explicitly default value
+            return defaultValue;
+        return !defaultValue;
+    }
+
     public static Editor from(Element element, EditorParams params) {
         Editor instance = new Editor(params);
         instance.initialize(element);
@@ -132,7 +161,7 @@ public class Editor {
     }
 
     private void compile() {
-        String request = new CompilationRequest(getJavaSource(), getClassName(), -1).toString();
+        String request = new CompilationRequest(getJavaSource(), imports, requireFull, getClassName(), -1).toString();
         if(currentCompileTask != null && !currentCompileTask.isSent()) {
             currentCompileTask.update(request);
             return;
@@ -187,17 +216,8 @@ public class Editor {
         long pos = diag.getPosition();
         if(pos == DiagModel.NOPOS)
             return;
-        long before = pos - diag.getStartPosition();
-        long after = diag.getEndPosition() - pos;
-        assert before >= 0 && after >= 0;
-        long line = diag.getLineNumber() - 1;
-        long column = diag.getColumnNumber() - 1;
-        long startColumn = column - before;
-        long endColumn = column + after;
-        if(endColumn - startColumn == 0)
-            endColumn++;
-        Position start = makePosition(line, startColumn);
-        Position end = makePosition(line, endColumn);
+        Position start = codeMirror.getDoc().posFromIndex(diag.getStartPosition());
+        Position end = codeMirror.getDoc().posFromIndex(diag.getEndPosition());
         TextMarkerOptions options = new Objs().$cast(TextMarkerOptions.class);
         switch(diag.getKind()) {
             case ERROR:
@@ -357,7 +377,7 @@ public class Editor {
             return;
         }
         int offset = (int) doc.indexFromPos(cur0) - setHintToken(cur0.line().intValue(), cur0.ch().intValue());
-        String request = new CompilationRequest(getJavaSource(), getClassName(), offset).toString();
+        String request = new CompilationRequest(getJavaSource(), imports, requireFull, getClassName(), offset).toString();
         if(currentCompletionTask != null && !currentCompletionTask.isSent()) {
             currentCompletionTask.update(request);
             return;

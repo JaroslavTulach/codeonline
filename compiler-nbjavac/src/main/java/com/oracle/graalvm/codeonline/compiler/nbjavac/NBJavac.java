@@ -40,14 +40,12 @@ package com.oracle.graalvm.codeonline.compiler.nbjavac;
 
 import com.oracle.graalvm.codeonline.compiler.common.Compiler;
 import com.oracle.graalvm.codeonline.compiler.common.WebWorker;
-import com.oracle.graalvm.codeonline.json.CompilationResult;
-import com.oracle.graalvm.codeonline.json.CompilationResultModel;
 import com.oracle.graalvm.codeonline.json.CompletionList;
 import com.oracle.graalvm.codeonline.json.CompletionListModel;
 import com.sun.tools.javac.api.JavacTool;
 import java.util.Arrays;
 import java.util.List;
-import javax.tools.DiagnosticCollector;
+import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -60,8 +58,7 @@ public class NBJavac extends Compiler {
     private final JavacTool compiler = JavacTool.create();
 
     @Override
-    protected CompilationResult compile(JavaFileManager fm, JavaFileObject file) throws Exception {
-        DiagnosticCollector<JavaFileObject> diags = new DiagnosticCollector<>();
+    protected boolean compile(JavaFileManager fm, JavaFileObject file, DiagnosticListener<JavaFileObject> diags) throws Exception {
         JavaCompiler.CompilationTask task = compiler.getTask(
                 null, // Writer, null ~ System.err
                 fm,
@@ -70,8 +67,7 @@ public class NBJavac extends Compiler {
                 null, // Iterable<String> classes to be processed by annotation processing, null ~ no classes
                 Arrays.asList(file)
         );
-        boolean success = task.call();
-        return CompilationResultModel.createCompilationResult(success, diags.getDiagnostics());
+        return task.call();
     }
 
     @Override
