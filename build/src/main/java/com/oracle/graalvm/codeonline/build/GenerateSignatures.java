@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,12 +42,13 @@ public final class GenerateSignatures {
     }
 
     public static void main(String[] args) throws IOException {
-        if(args.length != 3) {
-            throw new IllegalArgumentException("Usage: GenerateSignatures <outputDir> ${org.frgaal:compiler:jar} ${codeonline.classpath}");
+        if(args.length != 4) {
+            throw new IllegalArgumentException("Usage: GenerateSignatures ${project.build.outputDirectory} <outputDir> ${org.frgaal:compiler:jar} ${codeonline.classpath}");
         }
-        File outputDir = new File(args[0]);
-        File platformClassPath = new File(args[1]);
-        String userClassPathStr = args[2];
+        File resOutputDir = new File(args[0]);
+        File outputDir = new File(args[1]);
+        File platformClassPath = new File(args[2]);
+        String userClassPathStr = args[3];
         File[] userClassPath;
         if(userClassPathStr == null || userClassPathStr.isEmpty()) {
             System.out.println("Warning: ${codeonline.classpath} was empty. Only Java library classes will be available for code completion and highlighting.");
@@ -56,12 +57,17 @@ public final class GenerateSignatures {
         } else {
             userClassPath = Arrays.stream(userClassPathStr.split(File.pathSeparator)).map(File::new).toArray(File[]::new);
         }
+        resOutputDir.mkdirs();
         outputDir.mkdirs();
-        try(PrintStream printStream = new PrintStream(new File(outputDir, "available.txt"))) {
-            writePackages(outputDir, StandardLocation.PLATFORM_CLASS_PATH, readCtSym(platformClassPath), printStream::println);
-            for(File classPathElem : userClassPath) {
-                writePackages(outputDir, StandardLocation.CLASS_PATH, readJar(classPathElem), printStream::println);
-            }
+        ArrayList<String> platformClassPathList = new ArrayList<>();
+        ArrayList<String> classPathList = new ArrayList<>();
+        writePackages(outputDir, StandardLocation.PLATFORM_CLASS_PATH, readCtSym(platformClassPath), platformClassPathList::add);
+        for(File classPathElem : userClassPath) {
+            writePackages(outputDir, StandardLocation.CLASS_PATH, readJar(classPathElem), classPathList::add);
+        }
+        try(NtarWriter write = new NtarWriter(new FileOutputStream(new File(resOutputDir, "codeonline-signatures")))) {
+            write.put(StandardLocation.PLATFORM_CLASS_PATH.toString(), String.join(",", platformClassPathList).getBytes());
+            write.put(StandardLocation.CLASS_PATH.toString(), String.join(",", classPathList).getBytes());
         }
     }
 
@@ -121,12 +127,12 @@ public final class GenerateSignatures {
         return packages;
     }
 
-    private static void writePackages(File outDir, Location location, HashMap<String, HashMap<String, byte[]>> packages, Consumer<String> outputFileList) throws IOException {
+    private static void writePackages(File outDir, Location location, HashMap<String, HashMap<String, byte[]>> packages, Consumer<String> packageList) throws IOException {
         for(Map.Entry<String, HashMap<String, byte[]>> packageClasses : packages.entrySet()) {
             String packageName = packageClasses.getKey().replace('/', '.');
+            packageList.accept(packageName);
             HashMap<String, byte[]> classes = packageClasses.getValue();
             String outFileName = location + "-" + packageName + ".zip";
-            outputFileList.accept(outFileName);
             File outFile = new File(outDir, outFileName);
             try(NtarWriter out = new NtarWriter(new FileOutputStream(outFile))) {
                 for(Map.Entry<String, byte[]> entry : classes.entrySet()) {

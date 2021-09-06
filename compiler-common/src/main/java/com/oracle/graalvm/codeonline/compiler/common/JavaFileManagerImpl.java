@@ -23,11 +23,10 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
@@ -44,7 +43,17 @@ import javax.tools.StandardLocation;
  * The URIs used to identify the files do <em>not</em> resemble those used by the default file manager.
  */
 public final class JavaFileManagerImpl implements JavaFileManager {
-    private static final HashSet<String> availablePackageZips = new HashSet<>();
+    private static final HashMap<Location, HashSet<String>> AVAILABLE_SIGNATURES = new HashMap<>();
+
+    static {
+        try(NtarReader reader = new NtarReader(JavaFileManagerImpl.class.getResourceAsStream("/codeonline-signatures"))) {
+            for(NtarReader.Entry entry : reader) {
+                HashSet content = new HashSet(Arrays.asList(new String(entry.content).split(",")));
+                Object prev = AVAILABLE_SIGNATURES.put(StandardLocation.valueOf(entry.name), content);
+                assert prev == null;
+            }
+        }
+    }
 
     private final HashMap<String, FileObjectImpl> filesMap;
     private final HashSet<String> loadedPackageZips = new HashSet<>();
@@ -144,11 +153,10 @@ public final class JavaFileManagerImpl implements JavaFileManager {
     }
 
     private void loadPackage(Location location, String packageName) throws IOException {
-        if(location != StandardLocation.CLASS_PATH && location != StandardLocation.PLATFORM_CLASS_PATH)
+        HashSet<String> availableSignatures = AVAILABLE_SIGNATURES.get(location);
+        if(availableSignatures == null || !availableSignatures.contains(packageName))
             return;
         String fileName = location + "-" + packageName + ".zip";
-        if(!isPackageAvailable(fileName))
-            return;
         if(!loadedPackageZips.add(fileName))
             return;
         String qualification = packageName.isEmpty() ? "" : packageName + '.';
@@ -167,16 +175,6 @@ public final class JavaFileManagerImpl implements JavaFileManager {
 
     private static String getFileObjectName(Location location, String packageName, String relativeName) {
         return "fo:" + location + "/" + packageName + "/" + relativeName;
-    }
-
-    private boolean isPackageAvailable(String requestedZip) throws IOException {
-        if(availablePackageZips.isEmpty()) {
-            try(Scanner s = new Scanner(platformServices.openExternalResource("available.txt"))) {
-                while(s.hasNextLine())
-                    availablePackageZips.add(s.nextLine());
-            }
-        }
-        return availablePackageZips.contains(requestedZip);
     }
 
     public static final class Builder {
