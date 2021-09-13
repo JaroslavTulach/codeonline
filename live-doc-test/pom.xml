@@ -46,7 +46,7 @@
             <plugin>
                 <groupId>org.apidesign.bck2brwsr</groupId>
                 <artifactId>bck2brwsr-maven-plugin</artifactId>
-                <version>0.53</version>
+                <version>0.54</version>
                 <configuration>
                     <directory>${codeonline.outputDirectory}</directory>
                     <startpage>index.html</startpage>
