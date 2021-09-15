@@ -14,73 +14,6 @@
  * limitations under the License.
  */
 
-.IndicatorWrapper {
-    position: relative;
-    z-index: 5;
-}
-.Indicator:hover, .Indicator:active {
-    background: rgba(0,0,0,.125);
-}
-.Indicator {
-    cursor: pointer;
-    padding: .5ex;
-    border-radius: 3px;
-}
-.ErrorIndicator::before {
-    content: '\26D4';
-    padding-right: .5ex;
-}
-.WarningIndicator::before {
-    content: '\26A0\FE0F';
-    padding-right: .5ex;
-}
-.NoteIndicator::before {
-    content: '\2139\FE0F';
-    padding-right: .5ex;
-}
-.NoDiagIndicator::before {
-    content: '\2705';
-}
-.IndicatorDesc {
-    white-space: pre;
-    left: 0;
-    top: 2.75em;
-    position: absolute;
-    padding: .25em .75em;
-    box-shadow: 2px 3px 5px rgba(0,0,0,.2);
-    border-radius: 3px;
-    border: 1px solid silver;
-    background: white;
-    font-family: monospace;
-    line-height: 175%;
-}
-.IndicatorDesc::before {
-    content: '';
-    position: absolute;
-    left: 1ex;
-    top: -1em;
-    width: 0;
-    height: 0;
-    border: solid 1em transparent;
-    border-top: none;
-    border-bottom-color: white;
-    filter: drop-shadow(0 -.75px .5px rgba(0,0,0,.4));
-}
-
-.codeonline-error {
-	border-bottom: dotted 2px red;
-}
-.codeonline-warning {
-	background-color: yellow;
-}
-.codeonline-note {
-	border-bottom: dotted 1px blue;
-}
-
-.Java-hint {
-    background-repeat: no-repeat;
-    background-position: left center;
-}
 .Java-hint::before {
     display: inline-block;
     width: 2.5em;
@@ -129,15 +62,13 @@
     color: rgb(86,0,0);
 }
 .AnnotationType::before {
-    content: '@';
-    padding-left: .25em;
+    content: '\FF20';
 }
 .TypeParameter {
     color: black;
 }
 .TypeParameter::before {
-    content: '?';
-    padding-left: .25em;
+    content: '<?>';
 }
 .LocalVariable {
     color: rgb(0,0,124);

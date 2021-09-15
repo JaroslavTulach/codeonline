@@ -18,6 +18,7 @@ package com.oracle.graalvm.codeonline.build;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 
 public final class InputStreams {
@@ -36,5 +37,12 @@ public final class InputStreams {
             if(offset * 2 > contents.length)
                 contents = Arrays.copyOf(contents, contents.length * 2);
         }
+    }
+
+    public static void transferTo(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer, 0, buffer.length)) >= 0)
+            out.write(buffer, 0, read);
     }
 }

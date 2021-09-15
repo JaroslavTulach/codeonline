@@ -16,10 +16,13 @@
 
 package com.oracle.graalvm.codeonline.editor.cm;
 
+import net.java.html.js.JavaScriptBody;
+import net.java.html.js.JavaScriptResource;
 import net.java.html.lib.Exports;
 import net.java.html.lib.Modules;
 import net.java.html.lib.Objs;
 
+@JavaScriptResource("all.js")
 public class CodeMirrorModuleProvider extends Modules.Provider {
     private CodeMirrorModuleProvider() {}
 
@@ -31,6 +34,10 @@ public class CodeMirrorModuleProvider extends Modules.Provider {
     }
 
     public static void register() {
+        initializeCodeMirror();
         new CodeMirrorModuleProvider();
     }
+
+    @JavaScriptBody(args = {}, body = "")
+    private static native void initializeCodeMirror();
 }

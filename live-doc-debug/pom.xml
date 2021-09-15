@@ -117,7 +117,19 @@
                             <includeGroupIds>org.graalvm.codeonline</includeGroupIds>
                             <includeArtifactIds>codeonline-editor</includeArtifactIds>
                             <includeTypes>jar</includeTypes>
-                            <includes>com/oracle/graalvm/codeonline/editor/cm/**,codeonline-editor.css</includes>
+                            <includes>com/oracle/graalvm/codeonline/editor/cm/**</includes>
+                            <outputDirectory>target/classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-ui-defaults</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${codeonline.x.isparent}</skip>
+                            <artifact>org.graalvm.codeonline:codeonline-live-doc-ui:1.0-SNAPSHOT:zip:defaults</artifact>
                             <outputDirectory>target/classes</outputDirectory>
                         </configuration>
                     </execution>

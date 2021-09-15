@@ -34,6 +34,34 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <id>download-libraries</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.oracle.graalvm.codeonline.build.DownloadLibraries</mainClass>
+                            <classpathScope>compile</classpathScope>
+                            <arguments>
+                                <argument>${project.build.outputDirectory}/com/oracle/graalvm/codeonline/editor/cm/all.js:</argument>
+                                <argument>https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/codemirror.min.js</argument>
+                                <argument>https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/addon/hint/show-hint.min.js</argument>
+                                <argument>https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/mode/clike/clike.min.js</argument>
+                                <argument>${project.build.outputDirectory}/com/oracle/graalvm/codeonline/editor/all.css:</argument>
+                                <argument>${project.baseUri}/src/main/css/codeonline-editor.css</argument>
+                                <argument>https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/codemirror.min.css</argument>
+                                <argument>https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.1/addon/hint/show-hint.min.css</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -42,6 +70,12 @@
             <groupId>org.graalvm.codeonline</groupId>
             <artifactId>codeonline-models</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.codeonline</groupId>
+            <artifactId>codeonline-build</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.dukescript.libraries</groupId>

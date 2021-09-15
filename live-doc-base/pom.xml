@@ -71,16 +71,16 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>add-ui-css</id>
+                        <id>add-ui-defaults</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
                         <configuration>
                             <skip>${codeonline.x.isparent}</skip>
-                            <artifact>org.graalvm.codeonline:codeonline-editor:1.0-SNAPSHOT</artifact>
-                            <includes>codeonline-editor.css</includes>
+                            <artifact>org.graalvm.codeonline:codeonline-live-doc-ui:1.0-SNAPSHOT:zip:defaults</artifact>
                             <outputDirectory>${codeonline.outputDirectory}</outputDirectory>
+                            <overWriteIfNewer>false</overWriteIfNewer>
                         </configuration>
                     </execution>
                 </executions>

@@ -20,13 +20,32 @@ import com.oracle.graalvm.codeonline.editor.TaskQueue;
 import com.oracle.graalvm.codeonline.editor.Editor;
 import com.oracle.graalvm.codeonline.editor.EditorParams;
 import com.oracle.graalvm.codeonline.editor.WebWorkerTaskQueue;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import static net.java.html.lib.Exports.eval;
 import net.java.html.lib.dom.Element;
 import static net.java.html.lib.dom.Exports.document;
+import net.java.html.lib.dom.HTMLElement;
 import net.java.html.lib.dom.NodeListOf;
 import net.java.html.lib.dom.Worker;
 
 public final class LiveDoc {
+    private static final String CSS;
+
+    static {
+        StringBuilder sb = new StringBuilder();
+        try(Reader reader = new InputStreamReader(Editor.class.getResourceAsStream("all.css"))) {
+            char[] buffer = new char[16*1024];
+            int read;
+            while((read = reader.read(buffer)) >= 0)
+                sb.append(buffer, 0, read);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        CSS = sb.toString();
+    }
+
     private LiveDoc() {
         throw new UnsupportedOperationException();
     }
@@ -36,6 +55,10 @@ public final class LiveDoc {
     }
 
     public static void onPageLoad(TaskQueue<String, String> queue) throws Exception {
+        HTMLElement css = document.createElement("style");
+        css.innerText.set(CSS);
+        document.head().appendChild(css);
+
         EditorParams params = new EditorParams(queue);
 
         NodeListOf<?> elems = document.getElementsByClassName("codeonline");
