@@ -16,7 +16,6 @@
 
 package com.oracle.graalvm.codeonline.editor.cm;
 
-import com.oracle.graalvm.codeonline.editor.Editor;
 import com.oracle.graalvm.codeonline.editor.cm.CodeMirror.EditorFromTextArea;
 import com.oracle.graalvm.codeonline.editor.cm.ShowHint.ShowHintOptions;
 import net.java.html.lib.Function;
@@ -25,18 +24,29 @@ import net.java.html.lib.Objs;
 /**
  * Implements a CodeMirror hint helper using javac.
  */
-public class JavaHintHelper implements Function.A3/*<EditorFromTextArea, Function, ShowHintOptions, Hints>*/ {
+final class JavaHintHelper implements Function.A3/*<EditorFromTextArea, Function, ShowHintOptions, Hints>*/ {
+    private static final String HINT_FUNCTION_PROPERTY = "codeonline:hintFunction";
+
     private JavaHintHelper() {}
 
     @Override
-    public Object call(Object doc, Object cb, Object opts) {
-        Editor.getInstance(EditorFromTextArea.$as(doc)).hint(Function.$as(cb), ShowHintOptions.$as(opts));
+    public Object call(Object editor, Object cb, Object opts) {
+        Function function = Function.$as(cb);
+        getHintFunction(EditorFromTextArea.$as(editor)).getHints(hints -> function.apply(null, hints), ShowHintOptions.$as(opts));
         return null;
     }
 
-    public static Objs create() {
+    static Objs create() {
         Objs result = new Objs(new JavaHintHelper());
         result.$set("async", true);
         return result;
+    }
+
+    static void setHintFunction(EditorFromTextArea editor, HintProvider hintFunction) {
+        editor.$set(HINT_FUNCTION_PROPERTY, hintFunction);
+    }
+
+    static HintProvider getHintFunction(EditorFromTextArea editor) {
+        return (HintProvider) editor.$get(HINT_FUNCTION_PROPERTY);
     }
 }

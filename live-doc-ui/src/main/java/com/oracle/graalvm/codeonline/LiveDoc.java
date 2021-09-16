@@ -18,7 +18,6 @@ package com.oracle.graalvm.codeonline;
 
 import com.oracle.graalvm.codeonline.editor.TaskQueue;
 import com.oracle.graalvm.codeonline.editor.Editor;
-import com.oracle.graalvm.codeonline.editor.EditorParams;
 import com.oracle.graalvm.codeonline.editor.WebWorkerTaskQueue;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -59,8 +58,6 @@ public final class LiveDoc {
         css.innerText.set(CSS);
         document.head().appendChild(css);
 
-        EditorParams params = new EditorParams(queue);
-
         NodeListOf<?> elems = document.getElementsByClassName("codeonline");
 
         // Copy the list because we will be removing from it.
@@ -72,7 +69,7 @@ public final class LiveDoc {
 
         // Replace each element with an interactive editor.
         for(Element element : elemsCopy) {
-            Editor.from(element, params);
+            new LiveDocEditor().initialize(queue, element);
         }
     }
 }

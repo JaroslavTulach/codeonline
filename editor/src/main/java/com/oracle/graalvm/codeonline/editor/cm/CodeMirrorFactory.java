@@ -23,7 +23,7 @@ import static com.oracle.graalvm.codeonline.editor.cm.CodeMirror.Exports.registe
 import net.java.html.lib.Objs;
 import net.java.html.lib.dom.HTMLTextAreaElement;
 
-public class CodeMirrorFactory {
+public final class CodeMirrorFactory {
     private static final EditorConfiguration CODEMIRROR_CONF;
 
     static {
@@ -37,7 +37,9 @@ public class CodeMirrorFactory {
         CODEMIRROR_CONF = conf;
     }
 
-    public static EditorFromTextArea create(HTMLTextAreaElement ta) {
-        return fromTextArea(ta, CODEMIRROR_CONF);
+    public static EditorFromTextArea create(HTMLTextAreaElement ta, HintProvider hintProvider) {
+        EditorFromTextArea editor = fromTextArea(ta, CODEMIRROR_CONF);
+        JavaHintHelper.setHintFunction(editor, hintProvider);
+        return editor;
     }
 }

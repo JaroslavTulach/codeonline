@@ -35,181 +35,88 @@ import com.oracle.graalvm.codeonline.json.Diag;
 import com.oracle.graalvm.codeonline.json.DiagModel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
-import net.java.html.lib.dom.Element;
-import net.java.html.lib.dom.EventListener;
-import net.java.html.lib.dom.HTMLElement;
-import static net.java.html.lib.dom.Exports.btoa;
-import static net.java.html.lib.dom.Exports.document;
-import net.java.html.lib.dom.HTMLAnchorElement;
-import net.java.html.lib.dom.HTMLButtonElement;
 import net.java.html.lib.dom.HTMLTextAreaElement;
-import net.java.html.lib.dom.Text;
 
 /**
  * An instance of this class represents an editable code snippet.
  * It wraps a CodeMirror editor and adds error highlighting and auto-complete.
  */
-public class Editor {
-    private static final String EDITOR_PROPERTY = "codeonline.Editor";
-
+public final class Editor {
     private final EditorParams params;
     private final ArrayList<TextMarker> markers = new ArrayList<>();
-    private String origSource;
-    private String imports;
-    private boolean requireFull;
     private EditorFromTextArea codeMirror;
     private Doc doc;
-    private HTMLElement errorIndicator, warningIndicator, noteIndicator, noDiagIndicator;
-    private List<Diag> diags;
     private TaskQueue.Task<String, String> currentCompileTask;
 
     private Editor(EditorParams params) {
         this.params = params;
     }
 
-    public static Editor getInstance(EditorFromTextArea codeMirror) {
-        return (Editor) codeMirror.$get(EDITOR_PROPERTY);
+    ////////////////////////////////////////////////////////////////
+    // API methods
+    ////////////////////////////////////////////////////////////////
+
+    /**
+     * Initializes a new CodeOnline Editor in place of a textarea element.
+     * The initial content of the editor is set to the value of the textarea.
+     * @param textArea the element to be replaced and used for the value
+     * @param params additional configuration and callbacks
+     * @return a new editor instance
+     */
+    public static Editor from(HTMLTextAreaElement textArea, EditorParams params) {
+        return new Editor(params).initialize(textArea);
     }
 
-    private void initialize(Element oldElement) {
-        origSource = unIndent(oldElement.textContent());
-        imports = getImports(oldElement.getAttribute("data-imports"));
-        requireFull = getBoolean(oldElement.getAttribute("data-require-full"), false);
-        HTMLElement newElement = document.createElement("div");
-        newElement.appendChild(createButton("Save", this::save));
-        newElement.appendChild(document.createTextNode(" "));
-        newElement.appendChild(createButton("Reset", this::reset));
-        newElement.appendChild(document.createTextNode(" "));
-        errorIndicator = createIndicator(newElement, "ErrorIndicator", () -> getDiags(DiagModel.Kind.ERROR));
-        warningIndicator = createIndicator(newElement, "WarningIndicator", () -> getDiags(DiagModel.Kind.WARNING));
-        noteIndicator = createIndicator(newElement, "NoteIndicator", () -> getDiags(DiagModel.Kind.NOTE));
-        noDiagIndicator = createIndicator(newElement, "NoDiagIndicator", () -> "No errors or warnings");
-        newElement.appendChild(document.createElement("br"));
-        HTMLTextAreaElement ta = newElement.appendChild(document.createElement("textarea")).$cast(HTMLTextAreaElement.class);
-        ta.value.set(origSource);
-        oldElement.parentNode().replaceChild(newElement, oldElement);
-        codeMirror = CodeMirrorFactory.create(ta);
+    /**
+     * Reads the current content from the editor.
+     * @return a non-null string
+     */
+    public String getSourceCode() {
+        return codeMirror.getValue();
+    }
+
+    /**
+     * Updates the content of the editor, displays it, and compiles it.
+     * @param value a non-null string
+     */
+    public void setSourceCode(String value) {
+        codeMirror.setValue(value);
+    }
+
+    ////////////////////////////////////////////////////////////////
+    // Private methods
+    ////////////////////////////////////////////////////////////////
+
+    private Editor initialize(HTMLTextAreaElement textArea) {
+        codeMirror = CodeMirrorFactory.create(textArea, this::getHints);
         doc = codeMirror.getDoc();
-        codeMirror.$set(EDITOR_PROPERTY, this);
         on("changes", this::compile);
         on("cursorActivity", this::updateOrCloseHints);
+        return this;
     }
 
     private void on(String eventName, Runnable handler) {
         codeMirror.on(eventName, fnFromRunnable(handler));
     }
 
-    private static String unIndent(String code) {
-        String[] lines = code.split("\n");
-        String head = lines[0];
-        String indent = "";
-        for(int i = 0; i < head.length(); i++) {
-            if(!Character.isWhitespace(head.charAt(i))) {
-                indent = head.substring(0, i);
-                break;
-            }
-        }
-        if(indent.isEmpty())
-            return code;
-        StringBuilder result = new StringBuilder();
-        int length = 0;
-        for(String line : lines) {
-            if(line.startsWith(indent))
-                result.append(line, indent.length(), line.length());
-            else
-                result.append(line);
-            result.append('\n');
-            if(!line.matches("\\s*")) // .isBlank()
-                length = result.length();
-        }
-        return result.substring(0, length);
-    }
-
-    private static String getImports(String attr) {
-        if(attr == null)
-            return "";
-        final String IMPORT = "import ";
-        String[] items = attr.split("[,;]");
-        StringBuilder result = new StringBuilder(attr.length() + items.length * IMPORT.length() + 2);
-        for (String item : items) {
-            if(item.matches("\\s*")) // .isBlank()
-                continue;
-            if(!item.matches("\\s*import\\s.*"))
-                result.append(IMPORT);
-            result.append(item).append(';');
-        }
-        result.append('\n');
-        return result.toString();
-    }
-
-    private boolean getBoolean(String attr, boolean defaultValue) {
-        if(attr == null) // not present
-            return defaultValue;
-        if(Boolean.toString(defaultValue).equalsIgnoreCase(attr)) // present but explicitly default value
-            return defaultValue;
-        return !defaultValue;
-    }
-
-    public static Editor from(Element element, EditorParams params) {
-        Editor instance = new Editor(params);
-        instance.initialize(element);
-        return instance;
-    }
-
     private void compile() {
-        String request = new CompilationRequest(getJavaSource(), imports, requireFull, getClassName(), -1).toString();
+        String request = new CompilationRequest(getSourceCode(), params.imports, params.requireFull, getClassName(), -1).toString();
         if(currentCompileTask != null && !currentCompileTask.isSent()) {
             currentCompileTask.update(request);
             return;
         }
         currentCompileTask = params.compilationQueue.enqueue(request, response -> {
             CompilationResult cr = CompilationResultModel.parseCompilationResult(response);
-            for(TextMarker marker : markers) {
+            for(TextMarker marker : markers)
                 marker.clear();
-            }
-            int numErrors = 0, numWarnings = 0, numNotes = 0;
-            boolean noDiags = true;
-            for(Diag diag : diags = cr.getDiagnostics()) {
-                switch(diag.getKind()) {
-                    case ERROR:
-                        numErrors++;
-                        break;
-                    case WARNING:
-                        numWarnings++;
-                        break;
-                    case NOTE:
-                        numNotes++;
-                        break;
-                }
-                noDiags = false;
+            for(Diag diag : cr.getDiagnostics())
                 highlightError(diag);
-            }
-            reportCount(errorIndicator, numErrors);
-            reportCount(warningIndicator, numWarnings);
-            reportCount(noteIndicator, numNotes);
-            reportNoDiags(noDiags);
+            params.compilationEventHandler.accept(cr);
         });
-    }
-
-    private void reportCount(HTMLElement counter, int count) {
-        if(count != 0) {
-            counter.style().display.set("inline-block");
-            setText(counter, Integer.toString(count));
-        } else {
-            counter.style().display.set("none");
-        }
-    }
-
-    private void reportNoDiags(boolean noDiags) {
-        if(noDiags) {
-            noDiagIndicator.style().display.set("inline-block");
-        } else {
-            noDiagIndicator.style().display.set("none");
-        }
     }
 
     private void highlightError(Diag diag) {
@@ -235,28 +142,6 @@ public class Editor {
         markers.add(marker);
     }
 
-    private String getDiags(DiagModel.Kind kind) {
-        StringBuilder result = new StringBuilder();
-        boolean addSep = false;
-        for(Diag diag : diags) {
-            if(diag.getKind() != kind)
-                continue;
-            if(addSep)
-                result.append('\n');
-            else
-                addSep = true;
-            long line = diag.getLineNumber(), col = diag.getColumnNumber();
-            String msg = diag.getMessage();
-            if(line == DiagModel.NOPOS)
-                result.append(diag.getMessage());
-            else if(col == DiagModel.NOPOS)
-                result.append(line).append(": ").append(msg);
-            else
-                result.append(line).append(":").append(col).append(": ").append(msg);
-        }
-        return result.toString();
-    }
-
     private static Position makePosition(long line, long ch) {
         Position result = new Objs().$cast(Position.class);
         result.line.set(line);
@@ -264,57 +149,8 @@ public class Editor {
         return result;
     }
 
-    private void save() {
-        HTMLAnchorElement a = document.createElement("a").$cast(HTMLAnchorElement.class);
-        a.href.set("data:text/x-java;base64," + btoa(getJavaSource()));
-        a.setAttribute("download", getClassName() + ".java");
-        a.click();
-    }
-
-    private void reset() {
-        codeMirror.setValue(origSource);
-    }
-
-    private String getJavaSource() {
-        return codeMirror.getValue();
-    }
-
     private String getClassName() {
         return "Main";
-    }
-
-    private static HTMLElement createButton(String text, Runnable onClick) {
-        HTMLButtonElement button = document.createElement("button").$cast(HTMLButtonElement.class);
-        button.appendChild(document.createTextNode(text));
-        button.addEventListener("click", listener(onClick));
-        return button;
-    }
-
-    private static HTMLElement createIndicator(HTMLElement parent, String cssClass, Supplier<String> getDesc) {
-        HTMLElement wrapper = document.createElement("span");
-        wrapper.className.set("IndicatorWrapper");
-        HTMLElement indicator = document.createElement("span");
-        indicator.className.set("Indicator " + cssClass);
-        indicator.style().display.set("none");
-        indicator.appendChild(document.createTextNode(""));
-        wrapper.appendChild(indicator);
-        HTMLElement desc = document.createElement("span");
-        desc.className.set("IndicatorDesc");
-        desc.style().display.set("none");
-        desc.appendChild(document.createTextNode(""));
-        wrapper.appendChild(desc);
-        wrapper.tabIndex.set(0);
-        wrapper.addEventListener("click", listener(() -> {
-            setText(desc, getDesc.get());
-            desc.style().display.set("inline-block");
-        }));
-        wrapper.addEventListener("blur", listener(() -> desc.style().display.set("none")));
-        parent.appendChild(wrapper);
-        return indicator;
-    }
-
-    private static EventListener listener(Runnable runnable) {
-        return EventListener.$as(fnFromRunnable(runnable));
     }
 
     private static Function.A1 fnFromRunnable(Runnable runnable) {
@@ -324,9 +160,9 @@ public class Editor {
         };
     }
 
-    private static void setText(Element element, String text) {
-        element.childNodes().$get(0).$cast(Text.class).data.set(text);
-    }
+    ////////////////////////////////////////////////////////////////
+    // Code completions (called hints in CodeMirror)
+    ////////////////////////////////////////////////////////////////
 
     private String hintPrefix;
     private int currentHintLine, currentHintTokenStart;
@@ -369,15 +205,15 @@ public class Editor {
         return col - i;
     }
 
-    public void hint(Function cb, ShowHintOptions opts) {
+    private void getHints(Consumer<Hints> cb, ShowHintOptions opts) {
         opts.completeSingle.set(false);
         Position cur0 = doc.getCursor();
         if(hintActive() && hintRelevant(cur0)) {
-            cb.apply(null, makeHints());
+            cb.accept(makeHints());
             return;
         }
         int offset = (int) doc.indexFromPos(cur0) - setHintToken(cur0.line().intValue(), cur0.ch().intValue());
-        String request = new CompilationRequest(getJavaSource(), imports, requireFull, getClassName(), offset).toString();
+        String request = new CompilationRequest(getSourceCode(), params.imports, params.requireFull, getClassName(), offset).toString();
         if(currentCompletionTask != null && !currentCompletionTask.isSent()) {
             currentCompletionTask.update(request);
             return;
@@ -387,7 +223,7 @@ public class Editor {
             if(hintRelevant(cur1)) {
                 CompletionList cl = CompletionListModel.parseCompletionList(response);
                 hintItems = cl.getItems();
-                cb.apply(null, makeHints());
+                cb.accept(makeHints());
             }
         });
     }

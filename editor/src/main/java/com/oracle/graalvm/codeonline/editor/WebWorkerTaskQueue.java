@@ -22,7 +22,7 @@ import net.java.html.lib.dom.EventListener;
 import net.java.html.lib.dom.MessageEvent;
 import net.java.html.lib.dom.Worker;
 
-public class WebWorkerTaskQueue extends TaskQueue<String, String> {
+public final class WebWorkerTaskQueue extends TaskQueue<String, String> {
     private final Worker worker;
 
     public WebWorkerTaskQueue(Worker worker) {

@@ -16,17 +16,21 @@
 
 package com.oracle.graalvm.codeonline.editor;
 
-public class EditorParams {
+import com.oracle.graalvm.codeonline.json.CompilationResult;
+import java.util.function.Consumer;
+
+public final class EditorParams {
     public final TaskQueue<String, String> compilationQueue;
     public final TaskQueue<String, String> completionQueue;
+    public final Consumer<CompilationResult> compilationEventHandler;
+    public final String imports;
+    public final boolean requireFull;
 
-    public EditorParams(TaskQueue compilationQueue, TaskQueue completionQueue) {
+    public EditorParams(TaskQueue compilationQueue, TaskQueue completionQueue, Consumer<CompilationResult> compilationEventHandler, String imports, boolean requireFull) {
         this.compilationQueue = compilationQueue;
         this.completionQueue = completionQueue;
-    }
-
-    public EditorParams(TaskQueue universalQueue) {
-        this.compilationQueue = universalQueue;
-        this.completionQueue = universalQueue;
+        this.compilationEventHandler = compilationEventHandler;
+        this.imports = imports;
+        this.requireFull = requireFull;
     }
 }

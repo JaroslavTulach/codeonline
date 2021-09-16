@@ -23,7 +23,7 @@ import net.java.html.lib.Modules;
 import net.java.html.lib.Objs;
 
 @JavaScriptResource("all.js")
-public class CodeMirrorModuleProvider extends Modules.Provider {
+final class CodeMirrorModuleProvider extends Modules.Provider {
     private CodeMirrorModuleProvider() {}
 
     @Override
