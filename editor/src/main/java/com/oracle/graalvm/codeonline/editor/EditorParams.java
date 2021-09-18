@@ -24,13 +24,15 @@ public final class EditorParams {
     public final TaskQueue<String, String> completionQueue;
     public final Consumer<CompilationResult> compilationEventHandler;
     public final String imports;
+    public final String className;
     public final boolean requireFull;
 
-    public EditorParams(TaskQueue compilationQueue, TaskQueue completionQueue, Consumer<CompilationResult> compilationEventHandler, String imports, boolean requireFull) {
+    public EditorParams(TaskQueue compilationQueue, TaskQueue completionQueue, Consumer<CompilationResult> compilationEventHandler, String imports, String className, boolean requireFull) {
         this.compilationQueue = compilationQueue;
         this.completionQueue = completionQueue;
         this.compilationEventHandler = compilationEventHandler;
         this.imports = imports;
+        this.className = className;
         this.requireFull = requireFull;
     }
 }

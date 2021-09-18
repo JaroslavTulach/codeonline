@@ -23,8 +23,10 @@ import com.oracle.graalvm.codeonline.json.CompilationResult;
 import com.oracle.graalvm.codeonline.json.Diag;
 import com.oracle.graalvm.codeonline.json.DiagModel;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.java.html.lib.Function;
+import net.java.html.lib.Objs;
 import net.java.html.lib.dom.Element;
 import net.java.html.lib.dom.EventListener;
 import static net.java.html.lib.dom.Exports.btoa;
@@ -41,6 +43,7 @@ final class LiveDocEditor {
 
     private Editor editor;
     private String origSource;
+    private String fileName;
     private Indicator errorIndicator, warningIndicator, noteIndicator, noDiagIndicator;
     private List<Diag> diags;
 
@@ -91,6 +94,12 @@ final class LiveDocEditor {
         return result.toString();
     }
 
+    private static String getString(String attr, String defaultValue) {
+        if(attr == null)
+            return defaultValue;
+        return attr;
+    }
+
     private static boolean getBoolean(String attr, boolean defaultValue) {
         if(attr == null) // not present
             return defaultValue;
@@ -107,7 +116,9 @@ final class LiveDocEditor {
         // parse attributes
         origSource = unIndent(oldElement.textContent());
         String imports = getImports(oldElement.getAttribute("data-imports"));
+        String className = getString(oldElement.getAttribute("data-class"), "Main");
         boolean requireFull = getBoolean(oldElement.getAttribute("data-require-full"), false);
+        fileName = className + ".java";
         // generate toolbar
         HTMLElement container = createElement("div", "main",
                 createElement("div", "toolbar",
@@ -129,7 +140,9 @@ final class LiveDocEditor {
         HTMLTextAreaElement ta = container.appendChild(document.createElement("textarea")).$cast(HTMLTextAreaElement.class);
         ta.value.set(origSource);
         // change textarea to proper editor
-        editor = Editor.from(ta, new EditorParams(universalQueue, universalQueue, this::onCompilation, imports, requireFull));
+        editor = Editor.from(ta, new EditorParams(universalQueue, universalQueue, this::onCompilation, imports, className, requireFull));
+        // export some functions for use from JavaScript
+        container.$set("codeonline", createJsApi());
     }
 
     private static HTMLElement createButton(String text, Runnable onClick) {
@@ -139,13 +152,28 @@ final class LiveDocEditor {
         return button;
     }
 
+    private Objs createJsApi() {
+        Objs objs = new Objs();
+        objs.$set("getSourceCode", (Function.A0) editor::getSourceCode);
+        objs.$set("setSourceCode", fnFromConsumer(editor::setSourceCode));
+        objs.$set("refresh", fnFromRunnable(editor::refresh));
+        return objs;
+    }
+
     private static EventListener listener(Runnable runnable) {
         return EventListener.$as(fnFromRunnable(runnable));
     }
 
-    private static Function.A1 fnFromRunnable(Runnable runnable) {
-        return ignored -> {
+    private static Function.A0 fnFromRunnable(Runnable runnable) {
+        return () -> {
             runnable.run();
+            return null;
+        };
+    }
+
+    private static <A> Function.A1<A, Void> fnFromConsumer(Consumer<A> consumer) {
+        return arg -> {
+            consumer.accept(arg);
             return null;
         };
     }
@@ -249,7 +277,7 @@ final class LiveDocEditor {
     private void save() {
         HTMLAnchorElement a = document.createElement("a").$cast(HTMLAnchorElement.class);
         a.href.set("data:text/x-java;base64," + btoa(editor.getSourceCode()));
-        a.setAttribute("download", "_CodeOnlineMain.java");
+        a.setAttribute("download", fileName);
         a.click();
     }
 

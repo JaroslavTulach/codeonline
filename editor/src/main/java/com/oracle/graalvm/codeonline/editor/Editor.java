@@ -87,6 +87,14 @@ public final class Editor {
         codeMirror.setValue(value);
     }
 
+    /**
+     * Triggers a refresh of the CodeMirror editor.
+     * Call this after resizing or showing for the first time (if constructed hidden).
+     */
+    public void refresh() {
+        codeMirror.refresh();
+    }
+
     ////////////////////////////////////////////////////////////////
     // Private methods
     ////////////////////////////////////////////////////////////////
@@ -104,7 +112,7 @@ public final class Editor {
     }
 
     private void compile() {
-        String request = new CompilationRequest(getSourceCode(), params.imports, params.requireFull, getClassName(), -1).toString();
+        String request = new CompilationRequest(getSourceCode(), params.imports, params.requireFull, params.className, -1).toString();
         if(currentCompileTask != null && !currentCompileTask.isSent()) {
             currentCompileTask.update(request);
             return;
@@ -149,12 +157,8 @@ public final class Editor {
         return result;
     }
 
-    private String getClassName() {
-        return "Main";
-    }
-
-    private static Function.A1 fnFromRunnable(Runnable runnable) {
-        return ignored -> {
+    private static Function.A0 fnFromRunnable(Runnable runnable) {
+        return () -> {
             runnable.run();
             return null;
         };
@@ -213,7 +217,7 @@ public final class Editor {
             return;
         }
         int offset = (int) doc.indexFromPos(cur0) - setHintToken(cur0.line().intValue(), cur0.ch().intValue());
-        String request = new CompilationRequest(getSourceCode(), params.imports, params.requireFull, getClassName(), offset).toString();
+        String request = new CompilationRequest(getSourceCode(), params.imports, params.requireFull, params.className, offset).toString();
         if(currentCompletionTask != null && !currentCompletionTask.isSent()) {
             currentCompletionTask.update(request);
             return;
