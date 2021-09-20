@@ -18,19 +18,33 @@ package com.oracle.graalvm.codeonline.editor;
 
 import com.oracle.graalvm.codeonline.json.CompilationResult;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 public final class EditorParams {
     public final TaskQueue<String, String> compilationQueue;
     public final TaskQueue<String, String> completionQueue;
-    public final Consumer<CompilationResult> compilationEventHandler;
+    public final Consumer<String> changeEventListener;
+    public final Consumer<CompilationResult> compilationEventListener;
+    public final IntConsumer taskCountListener;
     public final String imports;
     public final String className;
     public final boolean requireFull;
 
-    public EditorParams(TaskQueue compilationQueue, TaskQueue completionQueue, Consumer<CompilationResult> compilationEventHandler, String imports, String className, boolean requireFull) {
+    public EditorParams(
+            TaskQueue compilationQueue,
+            TaskQueue completionQueue,
+            Consumer<String> changeEventListener,
+            Consumer<CompilationResult> compilationEventListener,
+            IntConsumer taskCountListener,
+            String imports,
+            String className,
+            boolean requireFull
+    ) {
         this.compilationQueue = compilationQueue;
         this.completionQueue = completionQueue;
-        this.compilationEventHandler = compilationEventHandler;
+        this.changeEventListener = changeEventListener;
+        this.compilationEventListener = compilationEventListener;
+        this.taskCountListener = taskCountListener;
         this.imports = imports;
         this.className = className;
         this.requireFull = requireFull;

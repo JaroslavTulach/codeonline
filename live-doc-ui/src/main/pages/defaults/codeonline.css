@@ -100,6 +100,27 @@
 }
 
 /*
+ * Indicator of ongoing compilation. The icon is a typical "loading" animation.
+ */
+
+@keyframes rotating {
+    to {rotate: 1turn}
+}
+
+.codeonline-working-indicator::before {
+    content: '';
+    display: inline-block;
+    width: .75em;
+    height: .75em;
+    border: solid .125em black;
+    border-top-color: transparent;
+    border-radius: 100%;
+    vertical-align: baseline;
+    margin-bottom: -.125em;
+    animation: rotating .75s linear infinite;
+}
+
+/*
  * Exclude the description from the layout and display it right below the indicator.
  * Styled as a speech bubble. The ::before pseudo-element is an up-pointing triangle.
  */

@@ -42,10 +42,11 @@ final class LiveDocEditor {
     private static final String CSS_CLASS_PREFIX = "codeonline-";
 
     private final Document document;
+    private HTMLElement container;
     private Editor editor;
     private String origSource;
     private String fileName;
-    private Indicator errorIndicator, warningIndicator, noteIndicator, noDiagIndicator;
+    private Indicator errorIndicator, warningIndicator, noteIndicator, okIndicator, workingIndicator;
     private List<Diag> diags;
 
     LiveDocEditor(Document ownerDocument) {
@@ -125,7 +126,7 @@ final class LiveDocEditor {
         boolean requireFull = getBoolean(oldElement.getAttribute("data-require-full"), false);
         fileName = className + ".java";
         // generate toolbar
-        HTMLElement container = createElement("div", "main",
+        container = createElement("div", "main",
                 createElement("div", "toolbar",
                         createElement("span", "buttons",
                                 createButton("Save", this::save),
@@ -135,7 +136,8 @@ final class LiveDocEditor {
                                 (errorIndicator = createIndicator("error", () -> getDiags(DiagModel.Kind.ERROR))).wrapper,
                                 (warningIndicator = createIndicator("warning", () -> getDiags(DiagModel.Kind.WARNING))).wrapper,
                                 (noteIndicator = createIndicator("note", () -> getDiags(DiagModel.Kind.NOTE))).wrapper,
-                                (noDiagIndicator = createIndicator("ok", () -> "No errors or warnings")).wrapper
+                                (okIndicator = createIndicator("ok", () -> "No errors or warnings")).wrapper,
+                                (workingIndicator = createIndicator("working", () -> "Compiling...")).wrapper
                         )
                 )
         );
@@ -145,7 +147,7 @@ final class LiveDocEditor {
         HTMLTextAreaElement ta = container.appendChild(document.createElement("textarea")).$cast(HTMLTextAreaElement.class);
         ta.value.set(origSource);
         // change textarea to proper editor
-        editor = Editor.from(ta, new EditorParams(universalQueue, universalQueue, this::onCompilation, imports, className, requireFull));
+        editor = Editor.from(ta, new EditorParams(universalQueue, universalQueue, this::onChange, this::onCompilation, this::onTaskCountChange, imports, className, requireFull));
         // export some functions for use from JavaScript
         container.$set("codeonline", createJsApi());
     }
@@ -153,7 +155,7 @@ final class LiveDocEditor {
     private Indicator createIndicator(String kind, Supplier<String> descSupplier) {
         final Text counter, desc;
         final HTMLElement wrapper = createElement("span", "indicator-wrapper",
-                createElement("span", "indicator " + CSS_CLASS_PREFIX + kind + "-indicator",
+                createElement("span", multiClass("indicator", kind + "-indicator"),
                         counter = document.createTextNode("")
                 ),
                 createElement("span", "indicator-desc",
@@ -209,9 +211,21 @@ final class LiveDocEditor {
         return elem;
     }
 
+    private static void toggleClass(HTMLElement elem, String className, boolean on) {
+        elem.classList().toggle(CSS_CLASS_PREFIX + className, on);
+    }
+
+    private static String multiClass(String clsA, String clsB) {
+        return clsA + ' ' + CSS_CLASS_PREFIX + clsB;
+    }
+
     ////////////////////////////////////////////////////////////////
     // Displaying compilation results
     ////////////////////////////////////////////////////////////////
+
+    private void onTaskCountChange(int totalTaskCount) {
+        workingIndicator.report(totalTaskCount != 0);
+    }
 
     private void onCompilation(CompilationResult cr) {
         int numErrors = 0, numWarnings = 0, numNotes = 0;
@@ -233,7 +247,7 @@ final class LiveDocEditor {
         errorIndicator.report(numErrors);
         warningIndicator.report(numWarnings);
         noteIndicator.report(numNotes);
-        noDiagIndicator.report(noDiags);
+        okIndicator.report(noDiags);
     }
 
     private String getDiags(DiagModel.Kind kind) {
@@ -275,17 +289,18 @@ final class LiveDocEditor {
         }
 
         void report(boolean visible) {
-            if(visible) {
-                wrapper.classList().add(CSS_CLASS_PREFIX + "indicator-wrapper-visible");
-            } else {
-                wrapper.classList().remove(CSS_CLASS_PREFIX + "indicator-wrapper-visible");
-            }
+            toggleClass(wrapper, "indicator-wrapper-visible", visible);
         }
     }
 
     ////////////////////////////////////////////////////////////////
     // User actions
     ////////////////////////////////////////////////////////////////
+
+    private void onChange(String newSource) {
+        boolean modified = !newSource.equals(origSource);
+        toggleClass(container, "modified", modified);
+    }
 
     private void save() {
         HTMLAnchorElement a = document.createElement("a").$cast(HTMLAnchorElement.class);

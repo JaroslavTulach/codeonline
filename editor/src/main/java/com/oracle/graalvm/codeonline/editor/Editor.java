@@ -51,6 +51,7 @@ public final class Editor {
     private EditorFromTextArea codeMirror;
     private Doc doc;
     private TaskQueue.Task<String, String> currentCompileTask;
+    private int totalTaskCount;
 
     private Editor(EditorParams params) {
         this.params = params;
@@ -112,18 +113,22 @@ public final class Editor {
     }
 
     private void compile() {
-        String request = new CompilationRequest(getSourceCode(), params.imports, params.requireFull, params.className, -1).toString();
+        String source = getSourceCode();
+        params.changeEventListener.accept(source);
+        String request = new CompilationRequest(source, params.imports, params.requireFull, params.className, -1).toString();
         if(currentCompileTask != null && !currentCompileTask.isSent()) {
             currentCompileTask.update(request);
             return;
         }
+        updateTaskCount(+1);
         currentCompileTask = params.compilationQueue.enqueue(request, response -> {
             CompilationResult cr = CompilationResultModel.parseCompilationResult(response);
             for(TextMarker marker : markers)
                 marker.clear();
             for(Diag diag : cr.getDiagnostics())
                 highlightError(diag);
-            params.compilationEventHandler.accept(cr);
+            params.compilationEventListener.accept(cr);
+            updateTaskCount(-1);
         });
     }
 
@@ -148,6 +153,10 @@ public final class Editor {
         options.title.set(diag.getMessage());
         TextMarker marker = codeMirror.getDoc().markText(start, end, options);
         markers.add(marker);
+    }
+
+    private void updateTaskCount(int diff) {
+        params.taskCountListener.accept(totalTaskCount += diff);
     }
 
     private static Position makePosition(long line, long ch) {
@@ -222,6 +231,7 @@ public final class Editor {
             currentCompletionTask.update(request);
             return;
         }
+        updateTaskCount(+1);
         currentCompletionTask = params.completionQueue.enqueue(request, response -> {
             Position cur1 = doc.getCursor();
             if(hintRelevant(cur1)) {
@@ -229,6 +239,7 @@ public final class Editor {
                 hintItems = cl.getItems();
                 cb.accept(makeHints());
             }
+            updateTaskCount(-1);
         });
     }
 
