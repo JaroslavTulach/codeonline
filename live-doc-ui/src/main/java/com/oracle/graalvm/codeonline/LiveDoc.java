@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import static net.java.html.lib.Exports.eval;
+import net.java.html.lib.dom.Document;
 import net.java.html.lib.dom.Element;
-import static net.java.html.lib.dom.Exports.document;
 import net.java.html.lib.dom.HTMLElement;
 import net.java.html.lib.dom.NodeListOf;
 import net.java.html.lib.dom.Worker;
@@ -54,6 +54,8 @@ public final class LiveDoc {
     }
 
     public static void onPageLoad(TaskQueue<String, String> queue) throws Exception {
+        Document document = Document.$as(eval("document"));
+
         HTMLElement css = document.createElement("style");
         css.innerText.set(CSS);
         document.head().appendChild(css);
@@ -69,7 +71,7 @@ public final class LiveDoc {
 
         // Replace each element with an interactive editor.
         for(Element element : elemsCopy) {
-            new LiveDocEditor().initialize(queue, element);
+            new LiveDocEditor(document).initialize(queue, element);
         }
     }
 }

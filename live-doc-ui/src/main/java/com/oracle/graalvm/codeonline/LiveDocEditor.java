@@ -27,10 +27,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.java.html.lib.Function;
 import net.java.html.lib.Objs;
+import net.java.html.lib.dom.Document;
 import net.java.html.lib.dom.Element;
 import net.java.html.lib.dom.EventListener;
 import static net.java.html.lib.dom.Exports.btoa;
-import static net.java.html.lib.dom.Exports.document;
 import net.java.html.lib.dom.HTMLAnchorElement;
 import net.java.html.lib.dom.HTMLButtonElement;
 import net.java.html.lib.dom.HTMLElement;
@@ -41,11 +41,16 @@ import net.java.html.lib.dom.Text;
 final class LiveDocEditor {
     private static final String CSS_CLASS_PREFIX = "codeonline-";
 
+    private final Document document;
     private Editor editor;
     private String origSource;
     private String fileName;
     private Indicator errorIndicator, warningIndicator, noteIndicator, noDiagIndicator;
     private List<Diag> diags;
+
+    LiveDocEditor(Document ownerDocument) {
+        this.document = ownerDocument;
+    }
 
     ////////////////////////////////////////////////////////////////
     // Parsing attributes
@@ -127,10 +132,10 @@ final class LiveDocEditor {
                                 createButton("Revert", this::revert)
                         ),
                         createElement("span", "indicators",
-                                (errorIndicator = new Indicator("error", () -> getDiags(DiagModel.Kind.ERROR))).wrapper,
-                                (warningIndicator = new Indicator("warning", () -> getDiags(DiagModel.Kind.WARNING))).wrapper,
-                                (noteIndicator = new Indicator("note", () -> getDiags(DiagModel.Kind.NOTE))).wrapper,
-                                (noDiagIndicator = new Indicator("ok", () -> "No errors or warnings")).wrapper
+                                (errorIndicator = createIndicator("error", () -> getDiags(DiagModel.Kind.ERROR))).wrapper,
+                                (warningIndicator = createIndicator("warning", () -> getDiags(DiagModel.Kind.WARNING))).wrapper,
+                                (noteIndicator = createIndicator("note", () -> getDiags(DiagModel.Kind.NOTE))).wrapper,
+                                (noDiagIndicator = createIndicator("ok", () -> "No errors or warnings")).wrapper
                         )
                 )
         );
@@ -145,7 +150,24 @@ final class LiveDocEditor {
         container.$set("codeonline", createJsApi());
     }
 
-    private static HTMLElement createButton(String text, Runnable onClick) {
+    private Indicator createIndicator(String kind, Supplier<String> descSupplier) {
+        final Text counter, desc;
+        final HTMLElement wrapper = createElement("span", "indicator-wrapper",
+                createElement("span", "indicator " + CSS_CLASS_PREFIX + kind + "-indicator",
+                        counter = document.createTextNode("")
+                ),
+                createElement("span", "indicator-desc",
+                        desc = document.createTextNode("")
+                )
+        );
+        wrapper.tabIndex.set(0);
+        wrapper.addEventListener("focus", listener(() -> {
+            desc.data.set(descSupplier.get());
+        }));
+        return new Indicator(wrapper, counter, desc);
+    }
+
+    private HTMLElement createButton(String text, Runnable onClick) {
         HTMLButtonElement button = document.createElement("button").$cast(HTMLButtonElement.class);
         button.appendChild(document.createTextNode(text));
         button.addEventListener("click", listener(onClick));
@@ -178,7 +200,7 @@ final class LiveDocEditor {
         };
     }
 
-    private static HTMLElement createElement(String tagName, String className, Node... children) {
+    private HTMLElement createElement(String tagName, String className, Node... children) {
         HTMLElement elem = document.createElement(tagName);
         if(className != null)
             elem.className.set(CSS_CLASS_PREFIX + className);
@@ -241,19 +263,10 @@ final class LiveDocEditor {
         final Text counter;
         final Text desc;
 
-        Indicator(String kind, Supplier<String> descSupplier) {
-            wrapper = createElement("span", "indicator-wrapper",
-                    createElement("span", "indicator " + CSS_CLASS_PREFIX + kind + "-indicator",
-                            counter = document.createTextNode("")
-                    ),
-                    createElement("span", "indicator-desc",
-                            desc = document.createTextNode("")
-                    )
-            );
-            wrapper.tabIndex.set(0);
-            wrapper.addEventListener("focus", listener(() -> {
-                desc.data.set(descSupplier.get());
-            }));
+        Indicator(HTMLElement wrapper, Text counter, Text desc) {
+            this.wrapper = wrapper;
+            this.counter = counter;
+            this.desc = desc;
         }
 
         void report(int count) {
