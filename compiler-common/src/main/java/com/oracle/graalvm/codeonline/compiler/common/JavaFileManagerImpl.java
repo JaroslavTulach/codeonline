@@ -160,12 +160,10 @@ public final class JavaFileManagerImpl implements JavaFileManager {
         if(!loadedPackageZips.add(fileName))
             return;
         String qualification = packageName.isEmpty() ? "" : packageName + '.';
-        try(NtarReader zip = new NtarReader(platformServices.openExternalResource(fileName))) {
-            for(NtarReader.Entry entry : zip) {
-                JavaFileObject.Kind kind = JavaFileObject.Kind.CLASS;
-                String uri = getJavaFileObjectName(location, qualification + entry.name, kind);
-                filesMap.put(uri, new JavaFileObjectImpl(this, uri, new BinaryFileContents(entry.content), kind));
-            }
+        for(NtarReader.Entry entry : platformServices.loadArchive(fileName)) {
+            JavaFileObject.Kind kind = JavaFileObject.Kind.CLASS;
+            String uri = getJavaFileObjectName(location, qualification + entry.name, kind);
+            filesMap.put(uri, new JavaFileObjectImpl(this, uri, new BinaryFileContents(entry.content), kind));
         }
     }
 

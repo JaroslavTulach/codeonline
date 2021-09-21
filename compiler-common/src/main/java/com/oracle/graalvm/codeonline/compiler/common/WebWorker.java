@@ -35,7 +35,7 @@ public final class WebWorker {
         }));
     }
 
-    private static final class WebWorkerServices implements PlatformServices {
+    private static final class WebWorkerServices extends PlatformServices {
         private final String externalResourcesBase;
 
         WebWorkerServices(String externalResourcesBase) {

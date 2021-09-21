@@ -68,7 +68,7 @@ public final class DesktopMain {
         LiveDoc.onPageLoad(workerQueue);
     }
 
-    private static final class DesktopServices implements PlatformServices {
+    private static final class DesktopServices extends PlatformServices {
         @Override
         public InputStream openExternalResource(String name) throws IOException {
             return getClass().getResourceAsStream("/extres/" + name);
